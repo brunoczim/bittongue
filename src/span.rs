@@ -131,13 +131,18 @@ impl SpanContent {
     pub fn span(&self) -> &Span {
         &self.span
     }
+
+    /// Returns the span contents as a string.
+    pub fn as_str(&self) -> &str {
+        self.span.as_str()
+    }
 }
 
 impl Deref for SpanContent {
     type Target = str;
 
     fn deref(&self) -> &str {
-        self.span.as_str()
+        self.as_str()
     }
 }
 
