@@ -76,11 +76,12 @@ impl Location {
 impl fmt::Debug for Location {
     fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
         let (line, column) = self.line_column();
-        write!(
-            fmtr,
-            "Location {} src: {:?}, pos: {}, line: {}, column: {} {}",
-            '{', self.src, self.pos, line, column, '}'
-        )
+        fmtr.debug_struct("Location")
+            .field("src", &self.src)
+            .field("pos", &self.pos)
+            .field("line", &line)
+            .field("column", &column)
+            .finish()
     }
 }
 

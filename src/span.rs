@@ -79,16 +79,12 @@ impl Span {
 
 impl fmt::Debug for Span {
     fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            fmtr,
-            "Span {} src: {:?}, start: {}, end: {}, content: {:?} {}",
-            '{',
-            self.src(),
-            self.start(),
-            self.end(),
-            self.as_str(),
-            '}'
-        )
+        fmtr.debug_struct("Span")
+            .field("src", self.src())
+            .field("start", &self.start())
+            .field("end", &self.end())
+            .field("content", &self.as_str())
+            .finish()
     }
 }
 
