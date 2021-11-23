@@ -1,4 +1,4 @@
-name: Langsrc CI - Check
+name: Bittongue CI - Check
 on: [push, pull_request]
 
 jobs:

@@ -1,4 +1,4 @@
-name: Langsrc CI - GH Pages
+name: Bittongue CI - GH Pages
 on: 
   push:
     branches:
