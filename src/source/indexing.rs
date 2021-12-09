@@ -238,17 +238,17 @@ pub trait SourceIndex: fmt::Debug {
     type Output: ?Sized;
 
     /// Indexes the source code and returns `None` if out of bounds.
-    fn get<'src>(&self, src: &'src Source) -> Option<&'src Self::Output>;
+    fn get<'source>(&self, source: &'source Source) -> Option<&'source Self::Output>;
 
     /// Indexes the source code and panics if out of bounds.
-    fn index<'src>(&self, src: &'src Source) -> &'src Self::Output {
-        match self.get(src) {
+    fn index<'source>(&self, source: &'source Source) -> &'source Self::Output {
+        match self.get(source) {
             Some(out) => out,
             None => panic!(
                 "Index {:?} is not valid when accessing source {} of length {}",
                 self,
-                src.name(),
-                src.len()
+                source.name(),
+                source.len()
             ),
         }
     }
@@ -257,58 +257,58 @@ pub trait SourceIndex: fmt::Debug {
 impl SourceIndex for usize {
     type Output = str;
 
-    fn get<'src>(&self, src: &'src Source) -> Option<&'src Self::Output> {
-        (*self .. self.checked_add(1)?).get(src)
+    fn get<'source>(&self, source: &'source Source) -> Option<&'source Self::Output> {
+        (*self .. self.checked_add(1)?).get(source)
     }
 }
 
 impl SourceIndex for Range<usize> {
     type Output = str;
 
-    fn get<'src>(&self, src: &'src Source) -> Option<&'src Self::Output> {
-        let start = src.inner.segments.get(self.start)?;
-        let end = src.inner.segments.get(self.end)?;
-        src.contents().get(start .. end)
+    fn get<'source>(&self, source: &'source Source) -> Option<&'source Self::Output> {
+        let start = source.inner.segments.get(self.start)?;
+        let end = source.inner.segments.get(self.end)?;
+        source.contents().get(start .. end)
     }
 }
 
 impl SourceIndex for RangeTo<usize> {
     type Output = str;
 
-    fn get<'src>(&self, src: &'src Source) -> Option<&'src Self::Output> {
-        (0 .. self.end).get(src)
+    fn get<'source>(&self, source: &'source Source) -> Option<&'source Self::Output> {
+        (0 .. self.end).get(source)
     }
 }
 
 impl SourceIndex for RangeFrom<usize> {
     type Output = str;
 
-    fn get<'src>(&self, src: &'src Source) -> Option<&'src Self::Output> {
-        (self.start .. src.len()).get(src)
+    fn get<'source>(&self, source: &'source Source) -> Option<&'source Self::Output> {
+        (self.start .. source.len()).get(source)
     }
 }
 
 impl SourceIndex for RangeInclusive<usize> {
     type Output = str;
 
-    fn get<'src>(&self, src: &'src Source) -> Option<&'src Self::Output> {
-        (*self.start() .. self.end().checked_add(1)?).get(src)
+    fn get<'source>(&self, source: &'source Source) -> Option<&'source Self::Output> {
+        (*self.start() .. self.end().checked_add(1)?).get(source)
     }
 }
 
 impl SourceIndex for RangeToInclusive<usize> {
     type Output = str;
 
-    fn get<'src>(&self, src: &'src Source) -> Option<&'src Self::Output> {
-        (0 .. self.end.checked_add(1)?).get(src)
+    fn get<'source>(&self, source: &'source Source) -> Option<&'source Self::Output> {
+        (0 .. self.end.checked_add(1)?).get(source)
     }
 }
 
 impl SourceIndex for RangeFull {
     type Output = str;
 
-    fn get<'src>(&self, src: &'src Source) -> Option<&'src Self::Output> {
-        Some(src.contents())
+    fn get<'source>(&self, source: &'source Source) -> Option<&'source Self::Output> {
+        Some(source.contents())
     }
 }
 

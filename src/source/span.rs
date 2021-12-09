@@ -34,7 +34,7 @@ impl Span {
 
     /// The end location of this span.
     pub fn end(&self) -> Location {
-        Location::new(self.src().clone(), self.loc.pos() + self.len)
+        Location::new(self.source().clone(), self.loc.position() + self.len)
     }
 
     /// The length of this span in string segments.
@@ -43,14 +43,14 @@ impl Span {
     }
 
     /// The source code object this span refers to.
-    pub fn src(&self) -> &Source {
-        self.loc.src()
+    pub fn source(&self) -> &Source {
+        self.loc.source()
     }
 
     /// Gets the string this span includes as a whole.
     pub fn as_str(&self) -> &str {
-        let start = self.loc.pos();
-        self.src().get(start .. start + self.len()).unwrap()
+        let start = self.loc.position();
+        self.source().get(start .. start + self.len()).unwrap()
     }
 
     /// Creates a type that, when displayed, shows the span contents, rather
@@ -66,21 +66,21 @@ impl Span {
         let end_line = self.end().line();
         let init = start_line
             .checked_sub(1)
-            .map_or(0, |prev| self.src().inner.newlines.index(prev) + 1);
+            .map_or(0, |prev| self.source().inner.newlines.index(prev) + 1);
         let end = self
-            .src()
+            .source()
             .inner
             .newlines
             .get(end_line + 1)
-            .map_or(self.src().len(), |next| next + 1);
-        Self::new(Location::new(self.src().clone(), init), end - init)
+            .map_or(self.source().len(), |next| next + 1);
+        Self::new(Location::new(self.source().clone(), init), end - init)
     }
 }
 
 impl fmt::Debug for Span {
     fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
         fmtr.debug_struct("Span")
-            .field("src", self.src())
+            .field("source", self.source())
             .field("start", &self.start())
             .field("end", &self.end())
             .field("content", &self.as_str())
@@ -90,7 +90,7 @@ impl fmt::Debug for Span {
 
 impl fmt::Display for Span {
     fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
-        let file = self.src().name();
+        let file = self.source().name();
         let (line_start, col_start) = self.start().line_column();
         let (line_end, col_end) = self.end().line_column();
         write!(

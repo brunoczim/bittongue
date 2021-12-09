@@ -19,9 +19,9 @@
 //!
 //! let int_span = reader.span();
 //! assert_eq!(&int_span.content(), "int");
-//! assert_eq!(int_span.start().pos(), 0);
+//! assert_eq!(int_span.start().position(), 0);
 //! assert_eq!(int_span.start().line_column(), (0, 0));
-//! assert_eq!(int_span.end().pos(), 3);
+//! assert_eq!(int_span.end().position(), 3);
 //! assert_eq!(int_span.end().line_column(), (0, 3));
 //!
 //! for _ in 0 .. 9 {
@@ -34,21 +34,21 @@
 //!
 //! let main_span = reader.span();
 //! assert_eq!(&main_span.content(), "main");
-//! assert_eq!(main_span.start().pos(), 12);
+//! assert_eq!(main_span.start().position(), 12);
 //! assert_eq!(main_span.start().line_column(), (1, 0));
-//! assert_eq!(main_span.end().pos(), 16);
+//! assert_eq!(main_span.end().position(), 16);
 //! assert_eq!(main_span.end().line_column(), (1, 4));
 //! # }
 //! ```
 
 mod indexing;
-mod loc;
+mod location;
 mod reader;
 mod span;
 
 pub use indexing::SourceIndex;
 use indexing::{IndexArray, IndexArrayBuilder, IndexArrayIter};
-pub use loc::Location;
+pub use location::Location;
 pub use reader::Reader;
 pub use span::{Span, SpanContent};
 use std::{
