@@ -334,6 +334,30 @@
 <span id="334">334</span>
 <span id="335">335</span>
 <span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Utilities for indexing objects in memory, such as the source code object.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::Source</span>;
@@ -574,7 +598,10 @@
     <span class="kw">type</span> <span class="ident">Output</span>: <span class="question-mark">?</span><span class="ident">Sized</span>;
 
     <span class="doccomment">/// Indexes the source code and returns `None` if out of bounds.</span>
-    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>,
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Indexes the source code and panics if out of bounds.</span>
     <span class="kw">fn</span> <span class="ident">index</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span> {
@@ -593,7 +620,10 @@
 <span class="kw">impl</span> <span class="ident">SourceIndex</span> <span class="kw">for</span> <span class="ident">usize</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">str</span>;
 
-    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>,
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
         (<span class="kw-2">*</span><span class="self">self</span> .. <span class="self">self</span>.<span class="ident">checked_add</span>(<span class="number">1</span>)<span class="question-mark">?</span>).<span class="ident">get</span>(<span class="ident">source</span>)
     }
 }
@@ -601,7 +631,10 @@
 <span class="kw">impl</span> <span class="ident">SourceIndex</span> <span class="kw">for</span> <span class="ident">Range</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">str</span>;
 
-    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>,
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">source</span>.<span class="ident">inner</span>.<span class="ident">segments</span>.<span class="ident">get</span>(<span class="self">self</span>.<span class="ident">start</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">source</span>.<span class="ident">inner</span>.<span class="ident">segments</span>.<span class="ident">get</span>(<span class="self">self</span>.<span class="ident">end</span>)<span class="question-mark">?</span>;
         <span class="ident">source</span>.<span class="ident">contents</span>().<span class="ident">get</span>(<span class="ident">start</span> .. <span class="ident">end</span>)
@@ -611,7 +644,10 @@
 <span class="kw">impl</span> <span class="ident">SourceIndex</span> <span class="kw">for</span> <span class="ident">RangeTo</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">str</span>;
 
-    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>,
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
         (<span class="number">0</span> .. <span class="self">self</span>.<span class="ident">end</span>).<span class="ident">get</span>(<span class="ident">source</span>)
     }
 }
@@ -619,7 +655,10 @@
 <span class="kw">impl</span> <span class="ident">SourceIndex</span> <span class="kw">for</span> <span class="ident">RangeFrom</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">str</span>;
 
-    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>,
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
         (<span class="self">self</span>.<span class="ident">start</span> .. <span class="ident">source</span>.<span class="ident">len</span>()).<span class="ident">get</span>(<span class="ident">source</span>)
     }
 }
@@ -627,7 +666,10 @@
 <span class="kw">impl</span> <span class="ident">SourceIndex</span> <span class="kw">for</span> <span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">str</span>;
 
-    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>,
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
         (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">start</span>() .. <span class="self">self</span>.<span class="ident">end</span>().<span class="ident">checked_add</span>(<span class="number">1</span>)<span class="question-mark">?</span>).<span class="ident">get</span>(<span class="ident">source</span>)
     }
 }
@@ -635,7 +677,10 @@
 <span class="kw">impl</span> <span class="ident">SourceIndex</span> <span class="kw">for</span> <span class="ident">RangeToInclusive</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">str</span>;
 
-    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>,
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
         (<span class="number">0</span> .. <span class="self">self</span>.<span class="ident">end</span>.<span class="ident">checked_add</span>(<span class="number">1</span>)<span class="question-mark">?</span>).<span class="ident">get</span>(<span class="ident">source</span>)
     }
 }
@@ -643,7 +688,10 @@
 <span class="kw">impl</span> <span class="ident">SourceIndex</span> <span class="kw">for</span> <span class="ident">RangeFull</span> {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">str</span>;
 
-    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>,
+    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
         <span class="prelude-val">Some</span>(<span class="ident">source</span>.<span class="ident">contents</span>())
     }
 }
