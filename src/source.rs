@@ -116,19 +116,20 @@ impl Source {
         self.inner.segments.len() - 1
     }
 
-    /// The contentss of the source.
+    /// The contents of the source.
     pub fn contents(&self) -> &str {
         &self.inner.contents
     }
 
-    /// Iterator over the segments of the source.
-    pub fn segments(&self) -> SegmentsIter {
-        SegmentsIter { inner: self.inner.segments.iter() }
+    /// Iterator over the segment indices of the source, in terms of bytes.
+    pub fn segments(&self) -> SegmentIndices {
+        SegmentIndices { inner: self.inner.segments.iter() }
     }
 
-    /// Iterator over the newlines of the source.
-    pub fn newlines(&self) -> NewlinesIter {
-        NewlinesIter { inner: self.inner.segments.iter() }
+    /// Iterator over the newline indices of the source, in terms of grapheme
+    /// clusters.
+    pub fn newlines(&self) -> NewlineIndices {
+        NewlineIndices { inner: self.inner.segments.iter() }
     }
 
     /// Indexes this source. It can be a single `usize` or a range of `usize`.
@@ -191,14 +192,15 @@ impl fmt::Display for Source {
     }
 }
 
-/// Iterator over the segments of a source. Double-ended and sized.
+/// Iterator over the segment indices of a source, in terms of bytes.
+/// Double-ended and sized.
 #[derive(Debug)]
-pub struct SegmentsIter<'src> {
+pub struct SegmentIndices<'src> {
     /// The inner iterator over the indices.
     inner: IndexArrayIter<'src>,
 }
 
-impl<'src> Iterator for SegmentsIter<'src> {
+impl<'src> Iterator for SegmentIndices<'src> {
     type Item = usize;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -211,22 +213,23 @@ impl<'src> Iterator for SegmentsIter<'src> {
     }
 }
 
-impl<'src> DoubleEndedIterator for SegmentsIter<'src> {
+impl<'src> DoubleEndedIterator for SegmentIndices<'src> {
     fn next_back(&mut self) -> Option<Self::Item> {
         self.inner.next_back()
     }
 }
 
-impl<'array> ExactSizeIterator for SegmentsIter<'array> {}
+impl<'array> ExactSizeIterator for SegmentIndices<'array> {}
 
-/// Iterator over the newlines of a source. Double-ended and sized.
+/// Iterator over the newline indices of a source, in terms of grapheme
+/// clusters. Double-ended and sized.
 #[derive(Debug)]
-pub struct NewlinesIter<'src> {
+pub struct NewlineIndices<'src> {
     /// The inner iterator over the indices.
     inner: IndexArrayIter<'src>,
 }
 
-impl<'src> Iterator for NewlinesIter<'src> {
+impl<'src> Iterator for NewlineIndices<'src> {
     type Item = usize;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -239,10 +242,10 @@ impl<'src> Iterator for NewlinesIter<'src> {
     }
 }
 
-impl<'src> DoubleEndedIterator for NewlinesIter<'src> {
+impl<'src> DoubleEndedIterator for NewlineIndices<'src> {
     fn next_back(&mut self) -> Option<Self::Item> {
         self.inner.next_back()
     }
 }
 
-impl<'array> ExactSizeIterator for NewlinesIter<'array> {}
+impl<'array> ExactSizeIterator for NewlineIndices<'array> {}

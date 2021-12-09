@@ -4,7 +4,7 @@ use super::{Location, Source, Span};
 
 /// A reader of a source code, a stream.
 ///
-/// See [`Source::reader`](crate::Source::reader) to create a reader.
+/// See [`Source::reader`](Source::reader) to create a reader.
 #[derive(Debug, Clone)]
 pub struct Reader {
     /// The source code this reader is reading.
@@ -57,7 +57,7 @@ impl Reader {
         Location::new(self.src.clone(), self.pos)
     }
 
-    /// [`Span`](crate::span::Span) from the marked position up to the current
+    /// [`Span`](Span) from the marked position up to the current
     /// position.
     pub fn span(&self) -> Span {
         if self.marked < self.pos {
@@ -69,7 +69,7 @@ impl Reader {
     }
 
     /// Marks the current position so it can be used to create a
-    /// [`Span`](crate::span::Span) later.
+    /// [`Span`](Span) later.
     pub fn mark(&mut self) {
         self.marked = self.pos;
     }

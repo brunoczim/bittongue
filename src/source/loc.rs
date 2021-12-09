@@ -1,12 +1,12 @@
 //! This module provides means of tracking location in a source code.
 
-use crate::{Source, Span};
+use super::{Source, Span};
 use std::fmt;
 
 /// The location in a source code.
 ///
-/// See [`Reader::mark`](crate::reader::Reader::mark) and
-/// [`Reader::location`](crate::reader::Reader::location) to create a location.
+/// See [`Reader::mark`](super::Reader::mark) and
+/// [`Reader::location`](super::Reader::location) to create a location.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Location {
     /// The source code object.
@@ -56,7 +56,7 @@ impl Location {
         column
     }
 
-    /// Creates a [`Span`](crate::span::Span) containing the whole line this
+    /// Creates a [`Span`](Span) containing the whole line this
     /// location is in.
     pub fn line_span(&self) -> Span {
         let line = self.line();

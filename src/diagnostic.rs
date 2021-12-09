@@ -2,9 +2,9 @@ use crate::source::Span;
 use std::{
     any::{Any, TypeId},
     fmt,
-    marker::PhantomData,
     rc::Rc,
     sync::Arc,
+    vec,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -14,12 +14,12 @@ pub enum Level {
     Error,
 }
 
-pub trait Diagnostic: fmt::Display + fmt::Debug {
+pub trait Diagnostic: fmt::Display + fmt::Debug + Any {
     fn level(&self) -> Level;
 
     fn primary_span(&self) -> Option<Span>;
 
-    fn secondary_span<'this>(
+    fn secondary_spans<'this>(
         &'this self,
     ) -> Option<Box<dyn Iterator<Item = Span> + Send + Sync + 'this>> {
         None
@@ -40,17 +40,17 @@ macro_rules! impl_for_ptr {
                 (**self).primary_span()
             }
 
-            fn secondary_span<'this>(
+            fn secondary_spans<'this>(
                 &'this self,
             ) -> Option<Box<dyn Iterator<Item = Span> + Send + Sync + 'this>> {
-                (**self).secondary_span()
+                (**self).secondary_spans()
             }
         }
     };
 }
 
-impl_for_ptr! { <('diag, T)> &'diag T where T: Diagnostic + ?Sized }
-impl_for_ptr! { <('diag, T)> &'diag mut T where T: Diagnostic + ?Sized }
+impl_for_ptr! { <(T)> &'static T where T: Diagnostic + ?Sized }
+impl_for_ptr! { <(T)> &'static mut T where T: Diagnostic + ?Sized }
 impl_for_ptr! { <(T)> Box<T> where T: Diagnostic + ?Sized }
 impl_for_ptr! { <(T)> Rc<T> where T: Diagnostic + ?Sized }
 impl_for_ptr! { <(T)> Arc<T> where T: Diagnostic + ?Sized }
@@ -64,50 +64,46 @@ where
     }
 }
 
-impl<'diag, T> From<Box<T>> for Box<dyn Diagnostic + Send + 'diag>
+impl<T> From<Box<T>> for Box<dyn Diagnostic + Send>
 where
-    T: Diagnostic + 'diag + Send,
+    T: Diagnostic + Send,
 {
     fn from(implementor: Box<T>) -> Self {
         implementor
     }
 }
 
-impl<'diag, T> From<Box<T>> for Box<dyn Diagnostic + Sync + 'diag>
+impl<T> From<Box<T>> for Box<dyn Diagnostic + Sync>
 where
-    T: Diagnostic + 'diag + Sync,
+    T: Diagnostic + Sync,
 {
     fn from(implementor: Box<T>) -> Self {
         implementor
     }
 }
 
-impl<'diag, T> From<Box<T>> for Box<dyn Diagnostic + Send + Sync + 'diag>
+impl<T> From<Box<T>> for Box<dyn Diagnostic + Send + Sync>
 where
-    T: Diagnostic + 'diag + Send + Sync,
+    T: Diagnostic + Send + Sync,
 {
     fn from(implementor: Box<T>) -> Self {
         implementor
     }
 }
-
-pub trait AnyDiagnostic: Diagnostic + Any {}
-
-impl<T> AnyDiagnostic for T where T: Any + Diagnostic + ?Sized {}
 
 macro_rules! impl_downcast {
     ($ty:ty) => {
         impl $ty {
             pub fn is<T>(&self) -> bool
             where
-                T: Diagnostic + 'static,
+                T: Diagnostic,
             {
                 Any::type_id(self) == TypeId::of::<Self>()
             }
 
             pub fn downcast<T>(self: Box<Self>) -> Result<Box<T>, Box<Self>>
             where
-                T: Diagnostic + 'static,
+                T: Diagnostic,
             {
                 if self.is::<T>() {
                     let raw = Box::into_raw(self);
@@ -119,11 +115,11 @@ macro_rules! impl_downcast {
 
             pub fn downcast_ref<T>(&self) -> Option<&T>
             where
-                T: Diagnostic + 'static,
+                T: Diagnostic,
             {
                 if self.is::<T>() {
                     Some(unsafe {
-                        &*(self as *const dyn AnyDiagnostic as *const T)
+                        &*(self as *const dyn Diagnostic as *const T)
                     })
                 } else {
                     None
@@ -132,11 +128,11 @@ macro_rules! impl_downcast {
 
             pub fn downcast_mut<T>(&mut self) -> Option<&mut T>
             where
-                T: Diagnostic + 'static,
+                T: Diagnostic,
             {
                 if self.is::<T>() {
                     Some(unsafe {
-                        &mut *(self as *mut dyn AnyDiagnostic as *mut T)
+                        &mut *(self as *mut dyn Diagnostic as *mut T)
                     })
                 } else {
                     None
@@ -146,70 +142,50 @@ macro_rules! impl_downcast {
     };
 }
 
-impl_downcast! { dyn AnyDiagnostic }
-impl_downcast! { dyn AnyDiagnostic + Send }
-impl_downcast! { dyn AnyDiagnostic + Sync }
-impl_downcast! { dyn AnyDiagnostic + Send + Sync }
+impl_downcast! { dyn Diagnostic }
+impl_downcast! { dyn Diagnostic + Send }
+impl_downcast! { dyn Diagnostic + Sync }
+impl_downcast! { dyn Diagnostic + Send + Sync }
 
-impl<'diag, T> From<Box<T>> for Box<dyn AnyDiagnostic + 'diag>
+#[derive(Debug)]
+pub struct Diagnostics<D>
 where
-    T: AnyDiagnostic + 'diag,
+    D: Diagnostic + ?Sized,
 {
-    fn from(implementor: Box<T>) -> Self {
-        implementor
-    }
+    elements: Vec<Box<D>>,
 }
 
-impl<'diag, T> From<Box<T>> for Box<dyn AnyDiagnostic + Send + 'diag>
+impl<D> Diagnostics<D>
 where
-    T: AnyDiagnostic + 'diag + Send,
+    D: Diagnostic + ?Sized,
 {
-    fn from(implementor: Box<T>) -> Self {
-        implementor
+    pub fn new() -> Self {
+        Self { elements: Vec::new() }
     }
-}
 
-impl<'diag, T> From<Box<T>> for Box<dyn AnyDiagnostic + Sync + 'diag>
-where
-    T: AnyDiagnostic + 'diag + Sync,
-{
-    fn from(implementor: Box<T>) -> Self {
-        implementor
-    }
-}
-
-impl<'diag, T> From<Box<T>> for Box<dyn AnyDiagnostic + Send + Sync + 'diag>
-where
-    T: AnyDiagnostic + 'diag + Send + Sync,
-{
-    fn from(implementor: Box<T>) -> Self {
-        implementor
+    pub fn raise<T>(&mut self, diagnostic: T)
+    where
+        Box<T>: Into<Box<D>>,
+    {
+        self.elements.push(Box::new(diagnostic).into());
     }
 }
 
 #[derive(Debug)]
-pub struct Diagnostics<'diag, T = dyn Diagnostic + Send + Sync + 'diag>
+pub struct IntoIter<D>
 where
-    T: Diagnostic + 'diag,
+    D: Diagnostic + ?Sized,
 {
-    elements: Vec<Box<T>>,
-    _marker: PhantomData<dyn Diagnostic + 'diag>,
+    inner: vec::IntoIter<Box<D>>,
 }
 
-impl<'diag, T> Diagnostics<'diag, T>
+impl<D> Iterator for IntoIter<D>
 where
-    T: Diagnostic + 'diag,
+    D: Diagnostic + ?Sized,
 {
-    pub fn new() -> Self {
-        Self { elements: Vec::new(), _marker: PhantomData }
-    }
+    type Item = Box<D>;
 
-    pub fn raise<D>(&mut self, diagnostic: D)
-    where
-        Box<D>: Into<Box<T>>,
-    {
-        self.elements.push(Box::new(diagnostic).into())
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next()
     }
 }
-
-pub type AnyDiagnostics = Diagnostics<'static, dyn AnyDiagnostic + Send + Sync>;

@@ -11,8 +11,8 @@ use std::{
 
 /// A span (a range) in the source code.
 ///
-/// See [`Reader::mark`](crate::reader::Reader::mark) and
-/// [`Reader::span`](crate::reader::Reader::span) to create a span.
+/// See [`Reader::mark`](super::Reader::mark) and
+/// [`Reader::span`](super::Reader::span) to create a span.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Span {
     /// Start of the span.
