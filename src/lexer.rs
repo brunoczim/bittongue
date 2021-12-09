@@ -11,9 +11,11 @@ pub trait Lexer {
 
     fn transit(
         &mut self,
-        current: Option<&str>,
+        current: &str,
         diagnostics: &mut Diagnostics,
     ) -> Option<Result<Self::Token, LexingError>>;
+
+    fn finish(&mut self) -> Result<Self::Token, LexingError>;
 }
 
 #[derive(Debug, Clone)]

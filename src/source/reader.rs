@@ -23,7 +23,7 @@ impl Reader {
 
     /// Is the end of file reached?
     pub fn is_eof(&self) -> bool {
-        self.curr().is_none()
+        self.current().is_none()
     }
 
     /// Position in string segments that the reader is currently at.
@@ -32,13 +32,13 @@ impl Reader {
     }
 
     /// The current string segment rendered.
-    pub fn curr(&self) -> Option<&str> {
+    pub fn current(&self) -> Option<&str> {
         self.source.get(self.position)
     }
 
     /// A string segment from current position until `current + additional`,
     /// rendered.
-    pub fn curr_to(&self, additional: usize) -> Option<&str> {
+    pub fn current_to(&self, additional: usize) -> Option<&str> {
         self.source.get(self.position .. self.position + additional)
     }
 
@@ -105,7 +105,7 @@ impl Reader {
 
         while expected.len() > 0 {
             if let Some(found) =
-                self.curr().filter(|found| expected.starts_with(found))
+                self.current().filter(|found| expected.starts_with(found))
             {
                 expected = &expected[found.len() ..];
                 count += 1;
