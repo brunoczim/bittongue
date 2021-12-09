@@ -3,7 +3,7 @@
 //!
 //! # Example
 //! ```rust
-//! use langsrc::Source;
+//! use bittongue::source::Source;
 //!
 //! # fn main() {
 //! let source = Source::new(
