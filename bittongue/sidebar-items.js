@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["diagnostic",""],["source","This module provides utilities to handle source code of a programming language."]]});
