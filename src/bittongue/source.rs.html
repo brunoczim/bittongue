@@ -270,9 +270,9 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! let int_span = reader.span();</span>
 <span class="doccomment">//! assert_eq!(&amp;int_span.content(), &quot;int&quot;);</span>
-<span class="doccomment">//! assert_eq!(int_span.start().pos(), 0);</span>
+<span class="doccomment">//! assert_eq!(int_span.start().position(), 0);</span>
 <span class="doccomment">//! assert_eq!(int_span.start().line_column(), (0, 0));</span>
-<span class="doccomment">//! assert_eq!(int_span.end().pos(), 3);</span>
+<span class="doccomment">//! assert_eq!(int_span.end().position(), 3);</span>
 <span class="doccomment">//! assert_eq!(int_span.end().line_column(), (0, 3));</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! for _ in 0 .. 9 {</span>
@@ -285,21 +285,21 @@
 <span class="doccomment">//!</span>
 <span class="doccomment">//! let main_span = reader.span();</span>
 <span class="doccomment">//! assert_eq!(&amp;main_span.content(), &quot;main&quot;);</span>
-<span class="doccomment">//! assert_eq!(main_span.start().pos(), 12);</span>
+<span class="doccomment">//! assert_eq!(main_span.start().position(), 12);</span>
 <span class="doccomment">//! assert_eq!(main_span.start().line_column(), (1, 0));</span>
-<span class="doccomment">//! assert_eq!(main_span.end().pos(), 16);</span>
+<span class="doccomment">//! assert_eq!(main_span.end().position(), 16);</span>
 <span class="doccomment">//! assert_eq!(main_span.end().line_column(), (1, 4));</span>
 <span class="doccomment">//! # }</span>
 <span class="doccomment">//! ```</span>
 
 <span class="kw">mod</span> <span class="ident">indexing</span>;
-<span class="kw">mod</span> <span class="ident">loc</span>;
+<span class="kw">mod</span> <span class="ident">location</span>;
 <span class="kw">mod</span> <span class="ident">reader</span>;
 <span class="kw">mod</span> <span class="ident">span</span>;
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">indexing::SourceIndex</span>;
 <span class="kw">use</span> <span class="ident">indexing</span>::{<span class="ident">IndexArray</span>, <span class="ident">IndexArrayBuilder</span>, <span class="ident">IndexArrayIter</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">loc::Location</span>;
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">location::Location</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">reader::Reader</span>;
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">span</span>::{<span class="ident">Span</span>, <span class="ident">SpanContent</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{

@@ -252,7 +252,7 @@
 
     <span class="doccomment">/// The end location of this span.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">end</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Location</span> {
-        <span class="ident">Location::new</span>(<span class="self">self</span>.<span class="ident">src</span>().<span class="ident">clone</span>(), <span class="self">self</span>.<span class="ident">loc</span>.<span class="ident">pos</span>() <span class="op">+</span> <span class="self">self</span>.<span class="ident">len</span>)
+        <span class="ident">Location::new</span>(<span class="self">self</span>.<span class="ident">source</span>().<span class="ident">clone</span>(), <span class="self">self</span>.<span class="ident">loc</span>.<span class="ident">position</span>() <span class="op">+</span> <span class="self">self</span>.<span class="ident">len</span>)
     }
 
     <span class="doccomment">/// The length of this span in string segments.</span>
@@ -261,14 +261,14 @@
     }
 
     <span class="doccomment">/// The source code object this span refers to.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">src</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Source</span> {
-        <span class="self">self</span>.<span class="ident">loc</span>.<span class="ident">src</span>()
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Source</span> {
+        <span class="self">self</span>.<span class="ident">loc</span>.<span class="ident">source</span>()
     }
 
     <span class="doccomment">/// Gets the string this span includes as a whole.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">loc</span>.<span class="ident">pos</span>();
-        <span class="self">self</span>.<span class="ident">src</span>().<span class="ident">get</span>(<span class="ident">start</span> .. <span class="ident">start</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>()
+        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">loc</span>.<span class="ident">position</span>();
+        <span class="self">self</span>.<span class="ident">source</span>().<span class="ident">get</span>(<span class="ident">start</span> .. <span class="ident">start</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>()
     }
 
     <span class="doccomment">/// Creates a type that, when displayed, shows the span contents, rather</span>
@@ -284,21 +284,21 @@
         <span class="kw">let</span> <span class="ident">end_line</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">end</span>().<span class="ident">line</span>();
         <span class="kw">let</span> <span class="ident">init</span> <span class="op">=</span> <span class="ident">start_line</span>
             .<span class="ident">checked_sub</span>(<span class="number">1</span>)
-            .<span class="ident">map_or</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">prev</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">src</span>().<span class="ident">inner</span>.<span class="ident">newlines</span>.<span class="ident">index</span>(<span class="ident">prev</span>) <span class="op">+</span> <span class="number">1</span>);
+            .<span class="ident">map_or</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">prev</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">source</span>().<span class="ident">inner</span>.<span class="ident">newlines</span>.<span class="ident">index</span>(<span class="ident">prev</span>) <span class="op">+</span> <span class="number">1</span>);
         <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">src</span>()
+            .<span class="ident">source</span>()
             .<span class="ident">inner</span>
             .<span class="ident">newlines</span>
             .<span class="ident">get</span>(<span class="ident">end_line</span> <span class="op">+</span> <span class="number">1</span>)
-            .<span class="ident">map_or</span>(<span class="self">self</span>.<span class="ident">src</span>().<span class="ident">len</span>(), <span class="op">|</span><span class="ident">next</span><span class="op">|</span> <span class="ident">next</span> <span class="op">+</span> <span class="number">1</span>);
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">Location::new</span>(<span class="self">self</span>.<span class="ident">src</span>().<span class="ident">clone</span>(), <span class="ident">init</span>), <span class="ident">end</span> <span class="op">-</span> <span class="ident">init</span>)
+            .<span class="ident">map_or</span>(<span class="self">self</span>.<span class="ident">source</span>().<span class="ident">len</span>(), <span class="op">|</span><span class="ident">next</span><span class="op">|</span> <span class="ident">next</span> <span class="op">+</span> <span class="number">1</span>);
+        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">Location::new</span>(<span class="self">self</span>.<span class="ident">source</span>().<span class="ident">clone</span>(), <span class="ident">init</span>), <span class="ident">end</span> <span class="op">-</span> <span class="ident">init</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Span</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmtr</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
         <span class="ident">fmtr</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;Span&quot;</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;src&quot;</span>, <span class="self">self</span>.<span class="ident">src</span>())
+            .<span class="ident">field</span>(<span class="string">&quot;source&quot;</span>, <span class="self">self</span>.<span class="ident">source</span>())
             .<span class="ident">field</span>(<span class="string">&quot;start&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">start</span>())
             .<span class="ident">field</span>(<span class="string">&quot;end&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">end</span>())
             .<span class="ident">field</span>(<span class="string">&quot;content&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">as_str</span>())
@@ -308,7 +308,7 @@
 
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Span</span> {
     <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmtr</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">src</span>().<span class="ident">name</span>();
+        <span class="kw">let</span> <span class="ident">file</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">source</span>().<span class="ident">name</span>();
         <span class="kw">let</span> (<span class="ident">line_start</span>, <span class="ident">col_start</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">start</span>().<span class="ident">line_column</span>();
         <span class="kw">let</span> (<span class="ident">line_end</span>, <span class="ident">col_end</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">end</span>().<span class="ident">line_column</span>();
         <span class="macro">write!</span>(
