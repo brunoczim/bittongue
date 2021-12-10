@@ -325,7 +325,6 @@
 <span id="325">325</span>
 <span id="326">326</span>
 <span id="327">327</span>
-<span id="328">328</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This crate provides helpers for source code management when writing</span>
 <span class="doccomment">//! programming languages (or non-programming computer languages).</span>
 <span class="doccomment">//!</span>
@@ -348,6 +347,129 @@
 <span class="doccomment">//!     TokenKind as TokenKindTrait,</span>
 <span class="doccomment">//!     Lexer as LexerTrait,</span>
 <span class="doccomment">//! };</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! fn main() {</span>
+<span class="doccomment">//!     // Creates the source code object, segmented in terms of grapheme clusters.</span>
+<span class="doccomment">//!     let source = Source::new(&quot;example.lang&quot;, &quot;; addition\n(add ç (x y))&quot;);</span>
+<span class="doccomment">//!     // Parser/compiler diagnostics collection.</span>
+<span class="doccomment">//!     let mut diagnostics = Diagnostics::new();</span>
+<span class="doccomment">//!     // Token stream that generates tokens using our custom lexer.</span>
+<span class="doccomment">//!     let mut tokens = TokenStream::new(&amp;source, Lexer, &amp;mut diagnostics);</span>
+<span class="doccomment">//!     // First token must have been already generated, and it was success.</span>
+<span class="doccomment">//!     assert!(diagnostics.is_ok());</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     // First token</span>
+<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
+<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::OpenParen);</span>
+<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;(&quot;);</span>
+<span class="doccomment">//!     // Starts from zero</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().column(), 0);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().column(), 1);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     // Generate next token, must be a success</span>
+<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
+<span class="doccomment">//!     assert!(diagnostics.is_ok());</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
+<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::Identifier);</span>
+<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;add&quot;);</span>
+<span class="doccomment">//!     // Starts from zero</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().column(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().column(), 4);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     // We now reach an invalid character, we implemented the lexer such that this</span>
+<span class="doccomment">//!     // is an error.</span>
+<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
+<span class="doccomment">//!     // And so our diagnostics collection has an error now.</span>
+<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
+<span class="doccomment">//!     assert!(tokens.current().is_err());</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     // Next token will be a success, but the diagnostics collection will still</span>
+<span class="doccomment">//!     // contain an error.</span>
+<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
+<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
+<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::OpenParen);</span>
+<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;(&quot;);</span>
+<span class="doccomment">//!     // Starts from zero</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().column(), 7);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().column(), 8);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     // Again, next token is successful, but the error will persist.</span>
+<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
+<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
+<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::Identifier);</span>
+<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;x&quot;);</span>
+<span class="doccomment">//!     // Starts from zero</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().column(), 8);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().column(), 9);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     // Success again (even though the error persists).</span>
+<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
+<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
+<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::Identifier);</span>
+<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;y&quot;);</span>
+<span class="doccomment">//!     // Starts from zero</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().column(), 10);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().column(), 11);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     // Success again (even though the error persists).</span>
+<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
+<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
+<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::CloseParen);</span>
+<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;)&quot;);</span>
+<span class="doccomment">//!     // Starts from zero</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().column(), 11);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().column(), 12);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     // Finally, the last token before End-Of-File.</span>
+<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
+<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
+<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::CloseParen);</span>
+<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;)&quot;);</span>
+<span class="doccomment">//!     // Starts from zero</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().column(), 12);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().column(), 13);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     // This will generate the End-Of-File.</span>
+<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
+<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
+<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::Eof);</span>
+<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;&quot;);</span>
+<span class="doccomment">//!     // Starts from zero</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.start().column(), 13);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
+<span class="doccomment">//!     assert_eq!(token.span.end().column(), 13);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     // As EOF is reached, no more tokens will be generated.</span>
+<span class="doccomment">//!     assert!(!tokens.next(&amp;mut diagnostics));</span>
+<span class="doccomment">//! }</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! /// The kind of tokens present in our programming language.</span>
 <span class="doccomment">//! #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]</span>
@@ -397,7 +519,6 @@
 <span class="doccomment">//!     }</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! /// Dummy struct for the custom lexer implementation.</span>
 <span class="doccomment">//! #[derive(Debug, Clone)]</span>
 <span class="doccomment">//! pub struct Lexer;</span>
 <span class="doccomment">//!</span>
@@ -524,129 +645,6 @@
 <span class="doccomment">//!         reader.next();</span>
 <span class="doccomment">//!         diagnostics.raise(InvalidGrapheme { span: reader.span() });</span>
 <span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! fn main() {</span>
-<span class="doccomment">//!     // Creates the source code object, segmented in terms of grapheme clusters.</span>
-<span class="doccomment">//!     let source = Source::new(&quot;example.lang&quot;, &quot;; addition\n(add ç (x y))&quot;);</span>
-<span class="doccomment">//!     // Parser/compiler diagnostics collection.</span>
-<span class="doccomment">//!     let mut diagnostics = Diagnostics::new();</span>
-<span class="doccomment">//!     // Token stream that generates tokens using our custom lexer.</span>
-<span class="doccomment">//!     let mut tokens = TokenStream::new(&amp;source, Lexer, &amp;mut diagnostics);</span>
-<span class="doccomment">//!     // First token must have been already generated, and it was success.</span>
-<span class="doccomment">//!     assert!(diagnostics.is_ok());</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // First token</span>
-<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
-<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::OpenParen);</span>
-<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;(&quot;);</span>
-<span class="doccomment">//!     // Starts from zero</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().column(), 0);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().column(), 1);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // Generate next token, must be a success</span>
-<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
-<span class="doccomment">//!     assert!(diagnostics.is_ok());</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
-<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::Identifier);</span>
-<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;add&quot;);</span>
-<span class="doccomment">//!     // Starts from zero</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().column(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().column(), 4);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // We now reach an invalid character, we implemented the lexer such that this</span>
-<span class="doccomment">//!     // is an error.</span>
-<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
-<span class="doccomment">//!     // And so our diagnostics collection has an error now.</span>
-<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
-<span class="doccomment">//!     assert!(tokens.current().is_err());</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // Next token will be a success, but the diagnostics collection will still</span>
-<span class="doccomment">//!     // contain an error.</span>
-<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
-<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
-<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::OpenParen);</span>
-<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;(&quot;);</span>
-<span class="doccomment">//!     // Starts from zero</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().column(), 7);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().column(), 8);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // Again, next token is successful, but the error will persist.</span>
-<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
-<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
-<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::Identifier);</span>
-<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;x&quot;);</span>
-<span class="doccomment">//!     // Starts from zero</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().column(), 8);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().column(), 9);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // Success again (even though the error persists).</span>
-<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
-<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
-<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::Identifier);</span>
-<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;y&quot;);</span>
-<span class="doccomment">//!     // Starts from zero</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().column(), 10);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().column(), 11);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // Success again (even though the error persists).</span>
-<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
-<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
-<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::CloseParen);</span>
-<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;)&quot;);</span>
-<span class="doccomment">//!     // Starts from zero</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().column(), 11);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().column(), 12);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // Finally, the last token before End-Of-File.</span>
-<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
-<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
-<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::CloseParen);</span>
-<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;)&quot;);</span>
-<span class="doccomment">//!     // Starts from zero</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().column(), 12);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().column(), 13);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // This will generate the End-Of-File.</span>
-<span class="doccomment">//!     assert!(tokens.next(&amp;mut diagnostics));</span>
-<span class="doccomment">//!     assert!(diagnostics.is_err());</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let token = tokens.current().unwrap();</span>
-<span class="doccomment">//!     assert_eq!(token.kind, TokenKind::Eof);</span>
-<span class="doccomment">//!     assert_eq!(token.span.as_str(), &quot;&quot;);</span>
-<span class="doccomment">//!     // Starts from zero</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.start().column(), 13);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().line(), 1);</span>
-<span class="doccomment">//!     assert_eq!(token.span.end().column(), 13);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     // As EOF is reached, no more tokens will be generated.</span>
-<span class="doccomment">//!     assert!(!tokens.next(&amp;mut diagnostics));</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>
 
