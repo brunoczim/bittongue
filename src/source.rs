@@ -62,7 +62,7 @@ use unicode_segmentation::UnicodeSegmentation;
 
 /// Inner structure of a source.
 #[derive(Debug)]
-struct SrcInner {
+struct SourceInner {
     /// File name.
     name: Box<str>,
     /// Contents of the source.
@@ -73,15 +73,19 @@ struct SrcInner {
     newlines: IndexArray,
 }
 
-/// A source code object, such as read from a file.
+/// A source code object, such as read from a file. Cloning this object results
+/// in simply incrementing a reference counter, thus sharing the source code
+/// object.
 #[derive(Debug, Clone)]
 pub struct Source {
     /// The inner structure containing the actual data.
-    inner: Rc<SrcInner>,
+    inner: Rc<SourceInner>,
 }
 
 impl Source {
-    /// Creates a new source code object given its name and its contentss.
+    /// Creates a new source code object given its name and its contents.
+    ///
+    /// Contents are rearranged as grapheme clusters.
     pub fn new<S0, S1>(name: S0, contents: S1) -> Self
     where
         S0: Into<Box<str>>,
@@ -102,7 +106,7 @@ impl Source {
 
         let segments = segments.into();
         let newlines = newlines.into();
-        let inner = SrcInner { name, contents, segments, newlines };
+        let inner = SourceInner { name, contents, segments, newlines };
         Self { inner: Rc::new(inner) }
     }
 
@@ -204,7 +208,7 @@ impl PartialOrd for Source {
 
 impl Ord for Source {
     fn cmp(&self, other: &Self) -> Ordering {
-        (&*self.inner as *const SrcInner).cmp(&(&*other.inner as *const _))
+        (&*self.inner as *const SourceInner).cmp(&(&*other.inner as *const _))
     }
 }
 
@@ -213,7 +217,7 @@ impl Hash for Source {
     where
         H: Hasher,
     {
-        (&*self.inner as *const SrcInner).hash(hasher)
+        (&*self.inner as *const SourceInner).hash(hasher)
     }
 }
 
