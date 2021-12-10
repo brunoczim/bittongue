@@ -330,6 +330,7 @@
 //! }
 //! ```
 
+pub mod grapheme;
 pub mod diagnostic;
 pub mod source;
 pub mod lexer;
