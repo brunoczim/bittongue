@@ -56,7 +56,7 @@ use std::{
     fmt,
     hash::{Hash, Hasher},
     ops::Index,
-    rc::Rc,
+    sync::Arc,
 };
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -79,7 +79,7 @@ struct SourceInner {
 #[derive(Debug, Clone)]
 pub struct Source {
     /// The inner structure containing the actual data.
-    inner: Rc<SourceInner>,
+    inner: Arc<SourceInner>,
 }
 
 impl Source {
@@ -107,7 +107,7 @@ impl Source {
         let segments = segments.into();
         let newlines = newlines.into();
         let inner = SourceInner { name, contents, segments, newlines };
-        Self { inner: Rc::new(inner) }
+        Self { inner: Arc::new(inner) }
     }
 
     /// The (file) name of the source.
@@ -194,7 +194,7 @@ where
 
 impl PartialEq for Source {
     fn eq(&self, other: &Self) -> bool {
-        Rc::ptr_eq(&self.inner, &other.inner)
+        Arc::ptr_eq(&self.inner, &other.inner)
     }
 }
 
