@@ -1,4 +1,7 @@
-use crate::source::{Reader, Source, Span};
+use crate::{
+    diagnostic::Diagnostics,
+    source::{Reader, Source, Span},
+};
 
 pub trait TokenKind {
     fn is_eof(&self) -> bool;
@@ -22,6 +25,7 @@ pub trait Lexer {
     fn generate_token(
         &mut self,
         reader: &mut Reader,
+        diagnostics: &mut Diagnostics,
     ) -> Result<Token<Self::TokenKind>, LexingError>;
 }
 
@@ -34,8 +38,9 @@ where
     fn generate_token(
         &mut self,
         reader: &mut Reader,
+        diagnostics: &mut Diagnostics,
     ) -> Result<Token<Self::TokenKind>, LexingError> {
-        (**self).generate_token(reader)
+        (**self).generate_token(reader, diagnostics)
     }
 }
 
@@ -48,8 +53,9 @@ where
     fn generate_token(
         &mut self,
         reader: &mut Reader,
+        diagnostics: &mut Diagnostics,
     ) -> Result<Token<Self::TokenKind>, LexingError> {
-        (**self).generate_token(reader)
+        (**self).generate_token(reader, diagnostics)
     }
 }
 
@@ -68,14 +74,18 @@ impl<L> TokenStream<L>
 where
     L: Lexer,
 {
-    pub fn new(source: &Source, lexer: L) -> Self {
+    pub fn new(
+        source: &Source,
+        lexer: L,
+        diagnostics: &mut Diagnostics,
+    ) -> Self {
         let mut this = Self {
             reader: source.reader(),
             lexer,
             tokens: Vec::new(),
             position: 0,
         };
-        let tok_res = this.lexer.generate_token(&mut this.reader);
+        let tok_res = this.lexer.generate_token(&mut this.reader, diagnostics);
         this.tokens.push(tok_res);
         this
     }
@@ -96,13 +106,14 @@ where
         self.reader.source()
     }
 
-    pub fn next(&mut self) -> bool {
+    pub fn next(&mut self, diagnostics: &mut Diagnostics) -> bool {
         if self.is_eof() {
             false
         } else {
             self.position += 1;
             if self.position >= self.tokens.len() {
-                let tok_res = self.lexer.generate_token(&mut self.reader);
+                let tok_res =
+                    self.lexer.generate_token(&mut self.reader, diagnostics);
                 self.tokens.push(tok_res);
             }
             true
@@ -118,10 +129,14 @@ where
         }
     }
 
-    pub fn advance(&mut self, count: usize) -> usize {
+    pub fn advance(
+        &mut self,
+        count: usize,
+        diagnostics: &mut Diagnostics,
+    ) -> usize {
         let mut advanced = count.min(self.tokens.len() - self.position);
         self.position += advanced;
-        while advanced < count && self.next() {
+        while advanced < count && self.next(diagnostics) {
             advanced += 1;
         }
         advanced
