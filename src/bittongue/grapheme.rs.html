@@ -212,6 +212,18 @@
 <span id="212">212</span>
 <span id="213">213</span>
 <span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cmp::Ordering</span>, <span class="ident">fmt</span>, <span class="ident">mem</span>, <span class="ident">rc::Rc</span>, <span class="ident">sync::Arc</span>};
 <span class="kw">use</span> <span class="ident">unicode_segmentation::UnicodeSegmentation</span>;
 
@@ -324,6 +336,10 @@
         <span class="self">self</span>.<span class="ident">to_char</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="ident">char::is_alphabetic</span>)
     }
 
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_ascii_alphabetic</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">to_char</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">ch</span><span class="op">|</span> <span class="ident">ch</span>.<span class="ident">is_ascii_alphabetic</span>())
+    }
+
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_numeric</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">strip_diacritics</span>().<span class="ident">is_numeric</span>()
     }
@@ -332,12 +348,20 @@
         <span class="self">self</span>.<span class="ident">to_char</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="ident">char::is_numeric</span>)
     }
 
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_ascii_numeric</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">to_char</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">ch</span><span class="op">|</span> <span class="ident">ch</span>.<span class="ident">is_ascii_digit</span>())
+    }
+
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_alphanumeric</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">strip_diacritics</span>().<span class="ident">is_alphanumeric</span>()
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_alphanumeric_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">to_char</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="ident">char::is_alphanumeric</span>)
+    }
+
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_ascii_alphanumeric</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">to_char</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">ch</span><span class="op">|</span> <span class="ident">ch</span>.<span class="ident">is_alphanumeric</span>())
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_digit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">base</span>: <span class="ident">u32</span>) -&gt; <span class="ident">bool</span> {
