@@ -1,5 +1,7 @@
 //! Utilities for indexing objects in memory, such as the source code object.
 
+use crate::grapheme::GraphemeCluster;
+
 use super::Source;
 use std::{
     cmp::Ordering,
@@ -258,13 +260,15 @@ pub trait SourceIndex: fmt::Debug {
 }
 
 impl SourceIndex for usize {
-    type Output = str;
+    type Output = GraphemeCluster;
 
     fn get<'source>(
         &self,
         source: &'source Source,
     ) -> Option<&'source Self::Output> {
-        (*self .. self.checked_add(1)?).get(source)
+        let start = source.inner.segments.get(*self)?;
+        let end = source.inner.segments.get(self + 1)?;
+        source.contents().get(start .. end).map(GraphemeCluster::new_unchecked)
     }
 }
 

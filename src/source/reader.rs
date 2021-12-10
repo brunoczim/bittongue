@@ -1,6 +1,7 @@
 //! This module provides means of navigating on a source code, a stream.
 
 use super::{Location, Source, Span};
+use crate::grapheme::GraphemeCluster;
 
 /// A reader of a source code, a stream.
 ///
@@ -32,7 +33,7 @@ impl Reader {
     }
 
     /// The current string segment rendered.
-    pub fn current(&self) -> Option<&str> {
+    pub fn current(&self) -> Option<&GraphemeCluster> {
         self.source.get(self.position)
     }
 
@@ -104,8 +105,9 @@ impl Reader {
         let mut count = 0;
 
         while expected.len() > 0 {
-            if let Some(found) =
-                self.current().filter(|found| expected.starts_with(found))
+            if let Some(found) = self
+                .current()
+                .filter(|found| expected.starts_with(found.as_str()))
             {
                 expected = &expected[found.len() ..];
                 count += 1;
