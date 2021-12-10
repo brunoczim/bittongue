@@ -21,129 +21,6 @@
 //!     Lexer as LexerTrait,
 //! };
 //!
-//! fn main() {
-//!     // Creates the source code object, segmented in terms of grapheme clusters.
-//!     let source = Source::new("example.lang", "; addition\n(add ç (x y))");
-//!     // Parser/compiler diagnostics collection.
-//!     let mut diagnostics = Diagnostics::new();
-//!     // Token stream that generates tokens using our custom lexer.
-//!     let mut tokens = TokenStream::new(&source, Lexer, &mut diagnostics);
-//!     // First token must have been already generated, and it was success.
-//!     assert!(diagnostics.is_ok());
-//!
-//!     // First token
-//!     let token = tokens.current().unwrap();
-//!     assert_eq!(token.kind, TokenKind::OpenParen);
-//!     assert_eq!(token.span.as_str(), "(");
-//!     // Starts from zero
-//!     assert_eq!(token.span.start().line(), 1);
-//!     assert_eq!(token.span.start().column(), 0);
-//!     assert_eq!(token.span.end().line(), 1);
-//!     assert_eq!(token.span.end().column(), 1);
-//!
-//!     // Generate next token, must be a success
-//!     assert!(tokens.next(&mut diagnostics));
-//!     assert!(diagnostics.is_ok());
-//!
-//!     let token = tokens.current().unwrap();
-//!     assert_eq!(token.kind, TokenKind::Identifier);
-//!     assert_eq!(token.span.as_str(), "add");
-//!     // Starts from zero
-//!     assert_eq!(token.span.start().line(), 1);
-//!     assert_eq!(token.span.start().column(), 1);
-//!     assert_eq!(token.span.end().line(), 1);
-//!     assert_eq!(token.span.end().column(), 4);
-//!
-//!     // We now reach an invalid character, we implemented the lexer such that this
-//!     // is an error.
-//!     assert!(tokens.next(&mut diagnostics));
-//!     // And so our diagnostics collection has an error now.
-//!     assert!(diagnostics.is_err());
-//!     assert!(tokens.current().is_err());
-//!
-//!     // Next token will be a success, but the diagnostics collection will still
-//!     // contain an error.
-//!     assert!(tokens.next(&mut diagnostics));
-//!     assert!(diagnostics.is_err());
-//!
-//!     let token = tokens.current().unwrap();
-//!     assert_eq!(token.kind, TokenKind::OpenParen);
-//!     assert_eq!(token.span.as_str(), "(");
-//!     // Starts from zero
-//!     assert_eq!(token.span.start().line(), 1);
-//!     assert_eq!(token.span.start().column(), 7);
-//!     assert_eq!(token.span.end().line(), 1);
-//!     assert_eq!(token.span.end().column(), 8);
-//!
-//!     // Again, next token is successful, but the error will persist.
-//!     assert!(tokens.next(&mut diagnostics));
-//!     assert!(diagnostics.is_err());
-//!
-//!     let token = tokens.current().unwrap();
-//!     assert_eq!(token.kind, TokenKind::Identifier);
-//!     assert_eq!(token.span.as_str(), "x");
-//!     // Starts from zero
-//!     assert_eq!(token.span.start().line(), 1);
-//!     assert_eq!(token.span.start().column(), 8);
-//!     assert_eq!(token.span.end().line(), 1);
-//!     assert_eq!(token.span.end().column(), 9);
-//!
-//!     // Success again (even though the error persists).
-//!     assert!(tokens.next(&mut diagnostics));
-//!     assert!(diagnostics.is_err());
-//!
-//!     let token = tokens.current().unwrap();
-//!     assert_eq!(token.kind, TokenKind::Identifier);
-//!     assert_eq!(token.span.as_str(), "y");
-//!     // Starts from zero
-//!     assert_eq!(token.span.start().line(), 1);
-//!     assert_eq!(token.span.start().column(), 10);
-//!     assert_eq!(token.span.end().line(), 1);
-//!     assert_eq!(token.span.end().column(), 11);
-//!
-//!     // Success again (even though the error persists).
-//!     assert!(tokens.next(&mut diagnostics));
-//!     assert!(diagnostics.is_err());
-//!
-//!     let token = tokens.current().unwrap();
-//!     assert_eq!(token.kind, TokenKind::CloseParen);
-//!     assert_eq!(token.span.as_str(), ")");
-//!     // Starts from zero
-//!     assert_eq!(token.span.start().line(), 1);
-//!     assert_eq!(token.span.start().column(), 11);
-//!     assert_eq!(token.span.end().line(), 1);
-//!     assert_eq!(token.span.end().column(), 12);
-//!
-//!     // Finally, the last token before End-Of-File.
-//!     assert!(tokens.next(&mut diagnostics));
-//!     assert!(diagnostics.is_err());
-//!
-//!     let token = tokens.current().unwrap();
-//!     assert_eq!(token.kind, TokenKind::CloseParen);
-//!     assert_eq!(token.span.as_str(), ")");
-//!     // Starts from zero
-//!     assert_eq!(token.span.start().line(), 1);
-//!     assert_eq!(token.span.start().column(), 12);
-//!     assert_eq!(token.span.end().line(), 1);
-//!     assert_eq!(token.span.end().column(), 13);
-//!
-//!     // This will generate the End-Of-File.
-//!     assert!(tokens.next(&mut diagnostics));
-//!     assert!(diagnostics.is_err());
-//!
-//!     let token = tokens.current().unwrap();
-//!     assert_eq!(token.kind, TokenKind::Eof);
-//!     assert_eq!(token.span.as_str(), "");
-//!     // Starts from zero
-//!     assert_eq!(token.span.start().line(), 1);
-//!     assert_eq!(token.span.start().column(), 13);
-//!     assert_eq!(token.span.end().line(), 1);
-//!     assert_eq!(token.span.end().column(), 13);
-//!
-//!     // As EOF is reached, no more tokens will be generated.
-//!     assert!(!tokens.next(&mut diagnostics));
-//! }
-//!
 //! /// The kind of tokens present in our programming language.
 //! #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 //! pub enum TokenKind {
@@ -192,6 +69,7 @@
 //!     }
 //! }
 //!
+//! /// Dummy struct for the custom lexer implementation.
 //! #[derive(Debug, Clone)]
 //! pub struct Lexer;
 //!
@@ -318,6 +196,129 @@
 //!         reader.next();
 //!         diagnostics.raise(InvalidGrapheme { span: reader.span() });
 //!     }
+//! }
+//!
+//! fn main() {
+//!     // Creates the source code object, segmented in terms of grapheme clusters.
+//!     let source = Source::new("example.lang", "; addition\n(add ç (x y))");
+//!     // Parser/compiler diagnostics collection.
+//!     let mut diagnostics = Diagnostics::new();
+//!     // Token stream that generates tokens using our custom lexer.
+//!     let mut tokens = TokenStream::new(&source, Lexer, &mut diagnostics);
+//!     // First token must have been already generated, and it was success.
+//!     assert!(diagnostics.is_ok());
+//!
+//!     // First token
+//!     let token = tokens.current().unwrap();
+//!     assert_eq!(token.kind, TokenKind::OpenParen);
+//!     assert_eq!(token.span.as_str(), "(");
+//!     // Starts from zero
+//!     assert_eq!(token.span.start().line(), 1);
+//!     assert_eq!(token.span.start().column(), 0);
+//!     assert_eq!(token.span.end().line(), 1);
+//!     assert_eq!(token.span.end().column(), 1);
+//!
+//!     // Generate next token, must be a success
+//!     assert!(tokens.next(&mut diagnostics));
+//!     assert!(diagnostics.is_ok());
+//!
+//!     let token = tokens.current().unwrap();
+//!     assert_eq!(token.kind, TokenKind::Identifier);
+//!     assert_eq!(token.span.as_str(), "add");
+//!     // Starts from zero
+//!     assert_eq!(token.span.start().line(), 1);
+//!     assert_eq!(token.span.start().column(), 1);
+//!     assert_eq!(token.span.end().line(), 1);
+//!     assert_eq!(token.span.end().column(), 4);
+//!
+//!     // We now reach an invalid character, we implemented the lexer such that this
+//!     // is an error.
+//!     assert!(tokens.next(&mut diagnostics));
+//!     // And so our diagnostics collection has an error now.
+//!     assert!(diagnostics.is_err());
+//!     assert!(tokens.current().is_err());
+//!
+//!     // Next token will be a success, but the diagnostics collection will still
+//!     // contain an error.
+//!     assert!(tokens.next(&mut diagnostics));
+//!     assert!(diagnostics.is_err());
+//!
+//!     let token = tokens.current().unwrap();
+//!     assert_eq!(token.kind, TokenKind::OpenParen);
+//!     assert_eq!(token.span.as_str(), "(");
+//!     // Starts from zero
+//!     assert_eq!(token.span.start().line(), 1);
+//!     assert_eq!(token.span.start().column(), 7);
+//!     assert_eq!(token.span.end().line(), 1);
+//!     assert_eq!(token.span.end().column(), 8);
+//!
+//!     // Again, next token is successful, but the error will persist.
+//!     assert!(tokens.next(&mut diagnostics));
+//!     assert!(diagnostics.is_err());
+//!
+//!     let token = tokens.current().unwrap();
+//!     assert_eq!(token.kind, TokenKind::Identifier);
+//!     assert_eq!(token.span.as_str(), "x");
+//!     // Starts from zero
+//!     assert_eq!(token.span.start().line(), 1);
+//!     assert_eq!(token.span.start().column(), 8);
+//!     assert_eq!(token.span.end().line(), 1);
+//!     assert_eq!(token.span.end().column(), 9);
+//!
+//!     // Success again (even though the error persists).
+//!     assert!(tokens.next(&mut diagnostics));
+//!     assert!(diagnostics.is_err());
+//!
+//!     let token = tokens.current().unwrap();
+//!     assert_eq!(token.kind, TokenKind::Identifier);
+//!     assert_eq!(token.span.as_str(), "y");
+//!     // Starts from zero
+//!     assert_eq!(token.span.start().line(), 1);
+//!     assert_eq!(token.span.start().column(), 10);
+//!     assert_eq!(token.span.end().line(), 1);
+//!     assert_eq!(token.span.end().column(), 11);
+//!
+//!     // Success again (even though the error persists).
+//!     assert!(tokens.next(&mut diagnostics));
+//!     assert!(diagnostics.is_err());
+//!
+//!     let token = tokens.current().unwrap();
+//!     assert_eq!(token.kind, TokenKind::CloseParen);
+//!     assert_eq!(token.span.as_str(), ")");
+//!     // Starts from zero
+//!     assert_eq!(token.span.start().line(), 1);
+//!     assert_eq!(token.span.start().column(), 11);
+//!     assert_eq!(token.span.end().line(), 1);
+//!     assert_eq!(token.span.end().column(), 12);
+//!
+//!     // Finally, the last token before End-Of-File.
+//!     assert!(tokens.next(&mut diagnostics));
+//!     assert!(diagnostics.is_err());
+//!
+//!     let token = tokens.current().unwrap();
+//!     assert_eq!(token.kind, TokenKind::CloseParen);
+//!     assert_eq!(token.span.as_str(), ")");
+//!     // Starts from zero
+//!     assert_eq!(token.span.start().line(), 1);
+//!     assert_eq!(token.span.start().column(), 12);
+//!     assert_eq!(token.span.end().line(), 1);
+//!     assert_eq!(token.span.end().column(), 13);
+//!
+//!     // This will generate the End-Of-File.
+//!     assert!(tokens.next(&mut diagnostics));
+//!     assert!(diagnostics.is_err());
+//!
+//!     let token = tokens.current().unwrap();
+//!     assert_eq!(token.kind, TokenKind::Eof);
+//!     assert_eq!(token.span.as_str(), "");
+//!     // Starts from zero
+//!     assert_eq!(token.span.start().line(), 1);
+//!     assert_eq!(token.span.start().column(), 13);
+//!     assert_eq!(token.span.end().line(), 1);
+//!     assert_eq!(token.span.end().column(), 13);
+//!
+//!     // As EOF is reached, no more tokens will be generated.
+//!     assert!(!tokens.next(&mut diagnostics));
 //! }
 //! ```
 
