@@ -216,6 +216,55 @@
 <span id="216">216</span>
 <span id="217">217</span>
 <span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module provides ways of tracking ranges (spans) in the source code.</span>
 
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Location</span>, <span class="ident">Source</span>};
@@ -224,7 +273,7 @@
     <span class="ident">cmp::Ordering</span>,
     <span class="ident">fmt</span>,
     <span class="ident">hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>},
-    <span class="ident">ops::Deref</span>,
+    <span class="ident">ops</span>::{<span class="ident">Bound</span>, <span class="ident">Deref</span>, <span class="ident">RangeBounds</span>},
 };
 
 <span class="doccomment">/// A span (a range) in the source code.</span>
@@ -234,40 +283,43 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Span</span> {
     <span class="doccomment">/// Start of the span.</span>
-    <span class="ident">loc</span>: <span class="ident">Location</span>,
+    <span class="ident">start</span>: <span class="ident">Location</span>,
     <span class="doccomment">/// Length of the span in string segments.</span>
-    <span class="ident">len</span>: <span class="ident">usize</span>,
+    <span class="ident">length</span>: <span class="ident">usize</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Span</span> {
     <span class="doccomment">/// Creates a new span given the start location and length.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">loc</span>: <span class="ident">Location</span>, <span class="ident">len</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">loc</span>, <span class="ident">len</span> }
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">start</span>: <span class="ident">Location</span>, <span class="ident">length</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
+        <span class="self">Self</span> { <span class="ident">start</span>, <span class="ident">length</span> }
     }
 
     <span class="doccomment">/// The start location of this span.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">start</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Location</span> {
-        <span class="self">self</span>.<span class="ident">loc</span>.<span class="ident">clone</span>()
+        <span class="self">self</span>.<span class="ident">start</span>.<span class="ident">clone</span>()
     }
 
     <span class="doccomment">/// The end location of this span.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">end</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Location</span> {
-        <span class="ident">Location::new</span>(<span class="self">self</span>.<span class="ident">source</span>().<span class="ident">clone</span>(), <span class="self">self</span>.<span class="ident">loc</span>.<span class="ident">position</span>() <span class="op">+</span> <span class="self">self</span>.<span class="ident">len</span>)
+        <span class="ident">Location::new</span>(
+            <span class="self">self</span>.<span class="ident">source</span>().<span class="ident">clone</span>(),
+            <span class="self">self</span>.<span class="ident">start</span>.<span class="ident">position</span>() <span class="op">+</span> <span class="self">self</span>.<span class="ident">length</span>,
+        )
     }
 
     <span class="doccomment">/// The length of this span in string segments.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">len</span>
+        <span class="self">self</span>.<span class="ident">length</span>
     }
 
     <span class="doccomment">/// The source code object this span refers to.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Source</span> {
-        <span class="self">self</span>.<span class="ident">loc</span>.<span class="ident">source</span>()
+        <span class="self">self</span>.<span class="ident">start</span>.<span class="ident">source</span>()
     }
 
     <span class="doccomment">/// Gets the string this span includes as a whole.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">loc</span>.<span class="ident">position</span>();
+        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start</span>.<span class="ident">position</span>();
         <span class="self">self</span>.<span class="ident">source</span>().<span class="ident">get</span>(<span class="ident">start</span> .. <span class="ident">start</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>()
     }
 
@@ -277,20 +329,66 @@
         <span class="ident">SpanContent</span> { <span class="ident">span</span>: <span class="self">self</span>.<span class="ident">clone</span>() }
     }
 
+    <span class="doccomment">/// Slices this span to the given range. Returns `None` if the range is</span>
+    <span class="doccomment">/// invalid.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_slice</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">range</span>: <span class="ident">R</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">R</span>: <span class="ident">RangeBounds</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
+    {
+        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">range</span>.<span class="ident">start_bound</span>() {
+            <span class="ident">Bound::Included</span>(<span class="kw-2">&amp;</span><span class="ident">position</span>) =&gt; <span class="ident">position</span>,
+            <span class="ident">Bound::Excluded</span>(<span class="ident">position</span>) =&gt; <span class="ident">position</span>.<span class="ident">saturating_add</span>(<span class="number">1</span>),
+            <span class="ident">Bound::Unbounded</span> =&gt; <span class="number">0</span>,
+        };
+
+        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">range</span>.<span class="ident">end_bound</span>() {
+            <span class="ident">Bound::Included</span>(<span class="ident">position</span>) =&gt; <span class="ident">position</span>.<span class="ident">saturating_add</span>(<span class="number">1</span>),
+            <span class="ident">Bound::Excluded</span>(<span class="kw-2">&amp;</span><span class="ident">position</span>) =&gt; <span class="ident">position</span>,
+            <span class="ident">Bound::Unbounded</span> =&gt; <span class="self">self</span>.<span class="ident">len</span>(),
+        };
+
+        <span class="kw">if</span> <span class="ident">start</span> <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">length</span> <span class="op">&amp;&amp;</span> <span class="ident">end</span> <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">length</span> <span class="op">&amp;&amp;</span> <span class="ident">start</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">end</span> {
+            <span class="kw">let</span> <span class="ident">start_loc</span> <span class="op">=</span> <span class="ident">Location::new</span>(
+                <span class="self">self</span>.<span class="ident">start</span>.<span class="ident">source</span>().<span class="ident">clone</span>(),
+                <span class="self">self</span>.<span class="ident">start</span>.<span class="ident">position</span>() <span class="op">+</span> <span class="ident">start</span>,
+            );
+            <span class="prelude-val">Some</span>(<span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">start_loc</span>, <span class="ident">end</span> <span class="op">-</span> <span class="ident">start</span>))
+        } <span class="kw">else</span> {
+            <span class="prelude-val">None</span>
+        }
+    }
+
+    <span class="doccomment">/// Slices this span to the given range.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Panics</span>
+    <span class="doccomment">/// Panics if the range is invalid.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">slice</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">range</span>: <span class="ident">R</span>) -&gt; <span class="self">Self</span>
+    <span class="kw">where</span>
+        <span class="ident">R</span>: <span class="ident">RangeBounds</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">fmt::Debug</span> <span class="op">+</span> <span class="ident">Clone</span>,
+    {
+        <span class="kw">fn</span> <span class="ident">bad_slice</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">range</span>: <span class="ident">R</span>) -&gt; <span class="op">!</span>
+        <span class="kw">where</span>
+            <span class="ident">R</span>: <span class="ident">fmt::Debug</span>,
+        {
+            <span class="macro">panic!</span>(<span class="string">&quot;Invalid range {:?} of span&quot;</span>, <span class="ident">range</span>)
+        }
+
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">try_slice</span>(<span class="ident">range</span>.<span class="ident">clone</span>()) {
+            <span class="prelude-val">Some</span>(<span class="ident">span</span>) =&gt; <span class="ident">span</span>,
+            <span class="prelude-val">None</span> =&gt; <span class="ident">bad_slice</span>(<span class="ident">range</span>),
+        }
+    }
+
     <span class="doccomment">/// Expands this span in order to contain the whole lines the original span</span>
     <span class="doccomment">/// contains.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">expand_lines</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Span</span> {
         <span class="kw">let</span> <span class="ident">start_line</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start</span>().<span class="ident">line</span>();
         <span class="kw">let</span> <span class="ident">end_line</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">end</span>().<span class="ident">line</span>();
-        <span class="kw">let</span> <span class="ident">init</span> <span class="op">=</span> <span class="ident">start_line</span>
-            .<span class="ident">checked_sub</span>(<span class="number">1</span>)
-            .<span class="ident">map_or</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">prev</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">source</span>().<span class="ident">inner</span>.<span class="ident">newlines</span>.<span class="ident">index</span>(<span class="ident">prev</span>) <span class="op">+</span> <span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">init</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">source</span>().<span class="ident">line_start</span>(<span class="ident">start_line</span>);
         <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">source</span>()
-            .<span class="ident">inner</span>
-            .<span class="ident">newlines</span>
-            .<span class="ident">get</span>(<span class="ident">end_line</span> <span class="op">+</span> <span class="number">1</span>)
-            .<span class="ident">map_or</span>(<span class="self">self</span>.<span class="ident">source</span>().<span class="ident">len</span>(), <span class="op">|</span><span class="ident">next</span><span class="op">|</span> <span class="ident">next</span> <span class="op">+</span> <span class="number">1</span>);
+            .<span class="ident">try_line_start</span>(<span class="ident">end_line</span> <span class="op">+</span> <span class="number">1</span>)
+            .<span class="ident">unwrap_or</span>(<span class="self">self</span>.<span class="ident">source</span>().<span class="ident">len</span>());
         <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">Location::new</span>(<span class="self">self</span>.<span class="ident">source</span>().<span class="ident">clone</span>(), <span class="ident">init</span>), <span class="ident">end</span> <span class="op">-</span> <span class="ident">init</span>)
     }
 }
