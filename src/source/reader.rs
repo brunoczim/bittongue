@@ -101,6 +101,8 @@ impl Reader {
         rolled
     }
 
+    /// Tests if the current grapheme cluster satisfies the given function.
+    /// End-Of-Input automatically yields `false`.
     pub fn test<F>(&self, tester: F) -> bool
     where
         F: FnOnce(&GraphemeCluster) -> bool,
@@ -108,6 +110,8 @@ impl Reader {
         self.current().map_or(false, tester)
     }
 
+    /// Tests if the current grapheme cluster satisfies the given function.
+    /// End-Of-Input automatically yields `true`.
     pub fn test_or_eof<F>(&self, tester: F) -> bool
     where
         F: FnOnce(&GraphemeCluster) -> bool,
