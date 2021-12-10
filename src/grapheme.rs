@@ -110,6 +110,10 @@ impl GraphemeCluster {
         self.to_char().map_or(false, char::is_alphabetic)
     }
 
+    pub fn is_ascii_alphabetic(&self) -> bool {
+        self.to_char().map_or(false, |ch| ch.is_ascii_alphabetic())
+    }
+
     pub fn is_numeric(&self) -> bool {
         self.strip_diacritics().is_numeric()
     }
@@ -118,12 +122,20 @@ impl GraphemeCluster {
         self.to_char().map_or(false, char::is_numeric)
     }
 
+    pub fn is_ascii_numeric(&self) -> bool {
+        self.to_char().map_or(false, |ch| ch.is_ascii_digit())
+    }
+
     pub fn is_alphanumeric(&self) -> bool {
         self.strip_diacritics().is_alphanumeric()
     }
 
     pub fn is_alphanumeric_char(&self) -> bool {
         self.to_char().map_or(false, char::is_alphanumeric)
+    }
+
+    pub fn is_ascii_alphanumeric(&self) -> bool {
+        self.to_char().map_or(false, |ch| ch.is_alphanumeric())
     }
 
     pub fn is_digit(&self, base: u32) -> bool {
