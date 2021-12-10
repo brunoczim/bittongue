@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["LexingError",""],["TokenStream",""]],"trait":[["Lexer",""]]});
+initSidebarItems({"struct":[["LexingError",""],["Token",""],["TokenStream",""]],"trait":[["Lexer",""],["TokenKind",""]]});
