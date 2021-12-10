@@ -6,7 +6,7 @@ use std::{
     cmp::Ordering,
     fmt,
     hash::{Hash, Hasher},
-    ops::Deref,
+    ops::{Bound, Deref, RangeBounds},
 };
 
 /// A span (a range) in the source code.
@@ -16,40 +16,43 @@ use std::{
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Span {
     /// Start of the span.
-    loc: Location,
+    start: Location,
     /// Length of the span in string segments.
-    len: usize,
+    length: usize,
 }
 
 impl Span {
     /// Creates a new span given the start location and length.
-    pub(super) fn new(loc: Location, len: usize) -> Self {
-        Self { loc, len }
+    pub(super) fn new(start: Location, length: usize) -> Self {
+        Self { start, length }
     }
 
     /// The start location of this span.
     pub fn start(&self) -> Location {
-        self.loc.clone()
+        self.start.clone()
     }
 
     /// The end location of this span.
     pub fn end(&self) -> Location {
-        Location::new(self.source().clone(), self.loc.position() + self.len)
+        Location::new(
+            self.source().clone(),
+            self.start.position() + self.length,
+        )
     }
 
     /// The length of this span in string segments.
     pub fn len(&self) -> usize {
-        self.len
+        self.length
     }
 
     /// The source code object this span refers to.
     pub fn source(&self) -> &Source {
-        self.loc.source()
+        self.start.source()
     }
 
     /// Gets the string this span includes as a whole.
     pub fn as_str(&self) -> &str {
-        let start = self.loc.position();
+        let start = self.start.position();
         self.source().get(start .. start + self.len()).unwrap()
     }
 
@@ -59,20 +62,66 @@ impl Span {
         SpanContent { span: self.clone() }
     }
 
+    /// Slices this span to the given range. Returns `None` if the range is
+    /// invalid.
+    pub fn try_slice<R>(&self, range: R) -> Option<Self>
+    where
+        R: RangeBounds<usize>,
+    {
+        let start = match range.start_bound() {
+            Bound::Included(&position) => position,
+            Bound::Excluded(position) => position.saturating_add(1),
+            Bound::Unbounded => 0,
+        };
+
+        let end = match range.end_bound() {
+            Bound::Included(position) => position.saturating_add(1),
+            Bound::Excluded(&position) => position,
+            Bound::Unbounded => self.len(),
+        };
+
+        if start <= self.length && end <= self.length && start <= end {
+            let start_loc = Location::new(
+                self.start.source().clone(),
+                self.start.position() + start,
+            );
+            Some(Self::new(start_loc, end - start))
+        } else {
+            None
+        }
+    }
+
+    /// Slices this span to the given range.
+    ///
+    /// # Panics
+    /// Panics if the range is invalid.
+    pub fn slice<R>(&self, range: R) -> Self
+    where
+        R: RangeBounds<usize> + fmt::Debug + Clone,
+    {
+        fn bad_slice<R>(range: R) -> !
+        where
+            R: fmt::Debug,
+        {
+            panic!("Invalid range {:?} of span", range)
+        }
+
+        match self.try_slice(range.clone()) {
+            Some(span) => span,
+            None => bad_slice(range),
+        }
+    }
+
     /// Expands this span in order to contain the whole lines the original span
     /// contains.
     pub fn expand_lines(&self) -> Span {
         let start_line = self.start().line();
         let end_line = self.end().line();
-        let init = start_line
-            .checked_sub(1)
-            .map_or(0, |prev| self.source().inner.newlines.index(prev) + 1);
+        let init = self.source().line_start(start_line);
         let end = self
             .source()
-            .inner
-            .newlines
-            .get(end_line + 1)
-            .map_or(self.source().len(), |next| next + 1);
+            .try_line_start(end_line + 1)
+            .unwrap_or(self.source().len());
         Self::new(Location::new(self.source().clone(), init), end - init)
     }
 }

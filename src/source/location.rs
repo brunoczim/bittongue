@@ -35,19 +35,14 @@ impl Location {
     /// Finds the line and column (respectively) of this location in the source
     /// code.
     pub fn line_column(&self) -> (usize, usize) {
-        match self.source.inner.newlines.binary_search(self.position) {
-            Ok(0) | Err(0) => (0, self.position),
-            Ok(n) | Err(n) => {
-                (n, self.position - self.source.inner.newlines.index(n - 1) - 1)
-            },
-        }
+        let line = self.source.line(self.position);
+        let line_start = self.source.line_start(line);
+        (line, self.position - line_start)
     }
 
     /// Finds the line of this location in the source code.
     pub fn line(&self) -> usize {
-        match self.source.inner.newlines.binary_search(self.position) {
-            Ok(n) | Err(n) => n,
-        }
+        self.source.line(self.position)
     }
 
     /// Finds the column of this location in the source code.
@@ -56,19 +51,14 @@ impl Location {
         column
     }
 
-    /// Creates a [`Span`](Span) containing the whole line this
-    /// location is in.
+    /// Creates a [`Span`] containing the whole line this location is in.
     pub fn line_span(&self) -> Span {
         let line = self.line();
-        let init = line
-            .checked_sub(1)
-            .map_or(0, |prev| self.source.inner.newlines.index(prev) + 1);
+        let init = self.source().line_start(line);
         let end = self
-            .source
-            .inner
-            .newlines
-            .get(line + 1)
-            .map_or(self.source.len(), |next| next + 1);
+            .source()
+            .try_line_start(line + 1)
+            .unwrap_or(self.source().len());
         Span::new(Self::new(self.source.clone(), init), end - init)
     }
 }

@@ -132,6 +132,37 @@ impl Source {
         NewlineIndices { inner: self.inner.segments.iter() }
     }
 
+    /// Returns the line number where the given position is contained, starting
+    /// from `0`.
+    fn line(&self, position: usize) -> usize {
+        match self.inner.newlines.binary_search(position) {
+            Ok(n) | Err(n) => n,
+        }
+    }
+
+    /// Returns the position of the given line number's start. Line number
+    /// begins at `0`.
+    ///
+    /// # Panics
+    /// Pancis if the given line does not exist.
+    fn line_start(&self, line: usize) -> usize {
+        if line == 0 {
+            0
+        } else {
+            self.inner.newlines.index(line - 1) + 1
+        }
+    }
+
+    /// Returns the position of the given line number's start. Line number
+    /// begins at `0`, returning `None` on invalid line number.
+    fn try_line_start(&self, line: usize) -> Option<usize> {
+        if line == 0 {
+            Some(0)
+        } else {
+            self.inner.newlines.get(line - 1).map(|position| position + 1)
+        }
+    }
+
     /// Indexes this source. It can be a single `usize` or a range of `usize`.
     pub fn get<I>(&self, indexer: I) -> Option<&I::Output>
     where
