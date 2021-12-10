@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, mem, rc::Rc, sync::Arc};
+use std::{cmp::Ordering, fmt, mem, rc::Rc, sync::Arc};
 use unicode_segmentation::UnicodeSegmentation;
 
 #[repr(transparent)]
@@ -7,11 +7,11 @@ pub struct GraphemeCluster {
     content: str,
 }
 
-impl<T> PartialEq<T> for GraphemeCluster
+impl<S> PartialEq<S> for GraphemeCluster
 where
-    T: AsRef<str> + ?Sized,
+    S: AsRef<str> + ?Sized,
 {
-    fn eq(&self, other: &T) -> bool {
+    fn eq(&self, other: &S) -> bool {
         self.as_str() == other.as_ref()
     }
 }
@@ -22,11 +22,11 @@ impl PartialEq<GraphemeCluster> for str {
     }
 }
 
-impl<T> PartialOrd<T> for GraphemeCluster
+impl<S> PartialOrd<S> for GraphemeCluster
 where
-    T: AsRef<str> + ?Sized,
+    S: AsRef<str> + ?Sized,
 {
-    fn partial_cmp(&self, other: &T) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &S) -> Option<Ordering> {
         self.as_str().partial_cmp(other.as_ref())
     }
 }
@@ -148,5 +148,67 @@ impl GraphemeCluster {
 
     pub fn is_whitespace_char(&self) -> bool {
         self.to_char().map_or(false, char::is_whitespace)
+    }
+}
+
+impl fmt::Display for GraphemeCluster {
+    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Display::fmt(self.as_str(), fmtr)
+    }
+}
+
+pub fn iter(input: &str) -> Iter {
+    Iter { inner: input.graphemes(true) }
+}
+
+pub fn indexed_iter(input: &str) -> IndexedIter {
+    IndexedIter { inner: input.grapheme_indices(true) }
+}
+
+#[derive(Debug, Clone)]
+pub struct Iter<'input> {
+    inner: unicode_segmentation::Graphemes<'input>,
+}
+
+impl<'input> Iterator for Iter<'input> {
+    type Item = &'input GraphemeCluster;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(GraphemeCluster::new_unchecked)
+    }
+}
+
+impl<'input> DoubleEndedIterator for Iter<'input> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        self.inner.next_back().map(GraphemeCluster::new_unchecked)
+    }
+}
+
+#[derive(Clone)]
+pub struct IndexedIter<'input> {
+    inner: unicode_segmentation::GraphemeIndices<'input>,
+}
+
+impl<'input> fmt::Debug for IndexedIter<'input> {
+    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
+        fmtr.debug_struct("IndexedIter").finish()
+    }
+}
+
+impl<'input> Iterator for IndexedIter<'input> {
+    type Item = (usize, &'input GraphemeCluster);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.inner.next().map(|(index, content)| {
+            (index, GraphemeCluster::new_unchecked(content))
+        })
+    }
+}
+
+impl<'input> DoubleEndedIterator for IndexedIter<'input> {
+    fn next_back(&mut self) -> Option<Self::Item> {
+        self.inner.next_back().map(|(index, content)| {
+            (index, GraphemeCluster::new_unchecked(content))
+        })
     }
 }
