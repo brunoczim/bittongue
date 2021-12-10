@@ -135,7 +135,7 @@ impl GraphemeCluster {
     }
 
     pub fn is_ascii_alphanumeric(&self) -> bool {
-        self.to_char().map_or(false, |ch| ch.is_alphanumeric())
+        self.to_char().map_or(false, |ch| ch.is_ascii_alphanumeric())
     }
 
     pub fn is_digit(&self, base: u32) -> bool {

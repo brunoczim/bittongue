@@ -208,7 +208,7 @@
 //!
 //!         // Marks the beginning of the token.
 //!         reader.mark();
-//!
+//!         
 //!         // Dispatch tokenization for each kind of token.
 //!         if self.is_curr_ident(reader) {
 //!             Ok(self.tokenize_ident(reader))
@@ -229,41 +229,32 @@
 //! impl Lexer {
 //!     /// Tests for identifier graphemes.
 //!     fn is_curr_ident(&self, reader: &Reader) -> bool {
-//!         reader.current().map_or(false, |grapheme| {
-//!             grapheme.len() == 1 && (
-//!                 grapheme >= "A" && grapheme <= "Z"
-//!                 || grapheme >= "a" && grapheme <= "z"
-//!                 || grapheme >= "0" && grapheme <= "9"
-//!                 || grapheme == "_"
-//!             )
-//!         })
+//!         reader.test(|graph| graph.is_ascii_alphanumeric() || graph == "_")
 //!     }
 //!
 //!     /// Tests for opening parenthesis.
 //!     fn is_curr_open_paren(&self, reader: &Reader) -> bool {
-//!         reader.current().map_or(false, |grapheme| grapheme == "(")
+//!         reader.test(|grapheme| grapheme == "(")
 //!     }
 //!
 //!     /// Tests for closing parenthesis.
 //!     fn is_curr_close_paren(&self, reader: &Reader) -> bool {
-//!         reader.current().map_or(false, |grapheme| grapheme == ")")
+//!         reader.test(|grapheme| grapheme == ")")
 //!     }
 //!
 //!     /// Tests for whitespaces.
 //!     fn is_curr_whitespace(&self, reader: &Reader) -> bool {
-//!         reader.current().map_or(false, |grapheme|
-//!             grapheme.chars().all(char::is_whitespace)
-//!         )
+//!         reader.test(|grapheme| grapheme.is_whitespace_char())
 //!     }
 //!
 //!     /// Tests for comment starts (`;`).
 //!     fn is_curr_comment_start(&self, reader: &Reader) -> bool {
-//!         reader.current().map_or(false, |grapheme| grapheme == ";")
+//!         reader.test(|grapheme| grapheme == ";")
 //!     }
 //!
 //!     /// Tests for comment ends (`\n` or end-of-input).
 //!     fn is_curr_comment_end(&self, reader: &Reader) -> bool {
-//!         reader.current().map_or(true, |grapheme| grapheme == "\n")
+//!         reader.test_or_eof(|grapheme| grapheme == "\n")
 //!     }
 //!
 //!     /// Discards unused grapheme sequences, such as whitespaces and comments.

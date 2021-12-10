@@ -101,23 +101,17 @@ impl Reader {
         rolled
     }
 
-    pub fn expect(&mut self, mut expected: &str) -> bool {
-        let mut count = 0;
+    pub fn test<F>(&self, tester: F) -> bool
+    where
+        F: FnOnce(&GraphemeCluster) -> bool,
+    {
+        self.current().map_or(false, tester)
+    }
 
-        while expected.len() > 0 {
-            if let Some(found) = self
-                .current()
-                .filter(|found| expected.starts_with(found.as_str()))
-            {
-                expected = &expected[found.len() ..];
-                count += 1;
-                self.next();
-            } else {
-                self.rollback(count);
-                return false;
-            }
-        }
-
-        true
+    pub fn test_or_eof<F>(&self, tester: F) -> bool
+    where
+        F: FnOnce(&GraphemeCluster) -> bool,
+    {
+        self.current().map_or(true, tester)
     }
 }
