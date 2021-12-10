@@ -267,6 +267,20 @@
 <span id="267">267</span>
 <span id="268">268</span>
 <span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This crate provides helpers for source code management when writing</span>
 <span class="doccomment">//! programming languages (or non-programming computer languages).</span>
 <span class="doccomment">//!</span>
@@ -287,7 +301,7 @@
 <span class="doccomment">//! };</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! fn main() {</span>
-<span class="doccomment">//!     let source = Source::new(&quot;example.lisp&quot;, &quot;; addition\n(add ç (x y))&quot;);</span>
+<span class="doccomment">//!     let source = Source::new(&quot;example.lang&quot;, &quot;; addition\n(add ç (x y))&quot;);</span>
 <span class="doccomment">//!     let mut diagnostics = Diagnostics::new();</span>
 <span class="doccomment">//!     let mut tokens = TokenStream::new(&amp;source, Lexer, &amp;mut diagnostics);</span>
 <span class="doccomment">//!     assert!(diagnostics.is_ok());</span>
@@ -430,6 +444,33 @@
 <span class="doccomment">//! #[derive(Debug, Clone)]</span>
 <span class="doccomment">//! pub struct Lexer;</span>
 <span class="doccomment">//!</span>
+<span class="doccomment">//! impl LexerTrait for Lexer {</span>
+<span class="doccomment">//!     type TokenKind = TokenKind;</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     fn generate_token(</span>
+<span class="doccomment">//!         &amp;mut self,</span>
+<span class="doccomment">//!         reader: &amp;mut Reader,</span>
+<span class="doccomment">//!         diagnostics: &amp;mut Diagnostics,</span>
+<span class="doccomment">//!     ) -&gt; Result&lt;Token&lt;Self::TokenKind&gt;, LexingError&gt; {</span>
+<span class="doccomment">//!         self.skip_discardable(reader);</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!         reader.mark();</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!         if self.is_curr_ident(reader) {</span>
+<span class="doccomment">//!             Ok(self.tokenize_ident(reader))</span>
+<span class="doccomment">//!         } else if self.is_curr_open_paren(reader) {</span>
+<span class="doccomment">//!             Ok(self.tokenize_open_paren(reader))</span>
+<span class="doccomment">//!         } else if self.is_curr_close_paren(reader) {</span>
+<span class="doccomment">//!             Ok(self.tokenize_close_paren(reader))</span>
+<span class="doccomment">//!         } else if reader.is_eof() {</span>
+<span class="doccomment">//!             Ok(self.tokenize_eof(reader))</span>
+<span class="doccomment">//!         } else {</span>
+<span class="doccomment">//!             self.invalid_grapheme(reader, diagnostics);</span>
+<span class="doccomment">//!             Err(LexingError)</span>
+<span class="doccomment">//!         }</span>
+<span class="doccomment">//!     }</span>
+<span class="doccomment">//! }</span>
+<span class="doccomment">//!</span>
 <span class="doccomment">//! impl Lexer {</span>
 <span class="doccomment">//!     fn is_curr_ident(&amp;self, reader: &amp;Reader) -&gt; bool {</span>
 <span class="doccomment">//!         reader.current().map_or(false, |grapheme| {</span>
@@ -437,6 +478,7 @@
 <span class="doccomment">//!                 grapheme &gt;= &quot;A&quot; &amp;&amp; grapheme &lt;= &quot;Z&quot;</span>
 <span class="doccomment">//!                 || grapheme &gt;= &quot;a&quot; &amp;&amp; grapheme &lt;= &quot;z&quot;</span>
 <span class="doccomment">//!                 || grapheme &gt;= &quot;0&quot; &amp;&amp; grapheme &lt;= &quot;9&quot;</span>
+<span class="doccomment">//!                 || grapheme == &quot;_&quot;</span>
 <span class="doccomment">//!             )</span>
 <span class="doccomment">//!         })</span>
 <span class="doccomment">//!     }</span>
@@ -486,49 +528,35 @@
 <span class="doccomment">//!             false</span>
 <span class="doccomment">//!         }</span>
 <span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
 <span class="doccomment">//!</span>
-<span class="doccomment">//! impl LexerTrait for Lexer {</span>
-<span class="doccomment">//!     type TokenKind = TokenKind;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     fn generate_token(</span>
-<span class="doccomment">//!         &amp;mut self,</span>
-<span class="doccomment">//!         reader: &amp;mut Reader,</span>
-<span class="doccomment">//!          diagnostics: &amp;mut Diagnostics,</span>
-<span class="doccomment">//!     ) -&gt; Result&lt;Token&lt;Self::TokenKind&gt;, LexingError&gt; {</span>
-<span class="doccomment">//!         self.skip_discardable(reader);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!         reader.mark();</span>
-<span class="doccomment">//!         if self.is_curr_ident(reader) {</span>
-<span class="doccomment">//!             while self.is_curr_ident(reader) {</span>
-<span class="doccomment">//!                 reader.next();</span>
-<span class="doccomment">//!             }</span>
-<span class="doccomment">//!             Ok(Token {</span>
-<span class="doccomment">//!                 kind: TokenKind::Identifier,</span>
-<span class="doccomment">//!                 span: reader.span(),</span>
-<span class="doccomment">//!             })</span>
-<span class="doccomment">//!         } else if self.is_curr_open_paren(reader) {</span>
+<span class="doccomment">//!     fn tokenize_ident(&amp;self, reader: &amp;mut Reader) -&gt; Token&lt;TokenKind&gt; {</span>
+<span class="doccomment">//!         while self.is_curr_ident(reader) {</span>
 <span class="doccomment">//!             reader.next();</span>
-<span class="doccomment">//!             Ok(Token {</span>
-<span class="doccomment">//!                 kind: TokenKind::OpenParen,</span>
-<span class="doccomment">//!                 span: reader.span(),</span>
-<span class="doccomment">//!             })</span>
-<span class="doccomment">//!         } else if self.is_curr_close_paren(reader) {</span>
-<span class="doccomment">//!             reader.next();</span>
-<span class="doccomment">//!             Ok(Token {</span>
-<span class="doccomment">//!                 kind: TokenKind::CloseParen,</span>
-<span class="doccomment">//!                 span: reader.span(),</span>
-<span class="doccomment">//!             })</span>
-<span class="doccomment">//!         } else if reader.is_eof() {</span>
-<span class="doccomment">//!             Ok(Token {</span>
-<span class="doccomment">//!                 kind: TokenKind::Eof,</span>
-<span class="doccomment">//!                 span: reader.span(),</span>
-<span class="doccomment">//!             })</span>
-<span class="doccomment">//!         } else {</span>
-<span class="doccomment">//!             reader.next();</span>
-<span class="doccomment">//!             diagnostics.raise(InvalidGrapheme { span: reader.span() });</span>
-<span class="doccomment">//!             Err(LexingError)</span>
 <span class="doccomment">//!         }</span>
+<span class="doccomment">//!         Token { kind: TokenKind::Identifier, span: reader.span() }</span>
+<span class="doccomment">//!     }</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     fn tokenize_open_paren(&amp;self, reader: &amp;mut Reader) -&gt; Token&lt;TokenKind&gt; {</span>
+<span class="doccomment">//!         reader.next();</span>
+<span class="doccomment">//!         Token { kind: TokenKind::OpenParen, span: reader.span() }</span>
+<span class="doccomment">//!     }</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     fn tokenize_close_paren(&amp;self, reader: &amp;mut Reader) -&gt; Token&lt;TokenKind&gt; {</span>
+<span class="doccomment">//!         reader.next();</span>
+<span class="doccomment">//!         Token { kind: TokenKind::CloseParen, span: reader.span() }</span>
+<span class="doccomment">//!     }</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     fn tokenize_eof(&amp;self, reader: &amp;mut Reader) -&gt; Token&lt;TokenKind&gt; {</span>
+<span class="doccomment">//!         Token { kind: TokenKind::Eof, span: reader.span() }</span>
+<span class="doccomment">//!     }</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//!     fn invalid_grapheme(</span>
+<span class="doccomment">//!         &amp;self,</span>
+<span class="doccomment">//!         reader: &amp;mut Reader,</span>
+<span class="doccomment">//!         diagnostics: &amp;mut Diagnostics,</span>
+<span class="doccomment">//!     ) {</span>
+<span class="doccomment">//!         reader.next();</span>
+<span class="doccomment">//!         diagnostics.raise(InvalidGrapheme { span: reader.span() });</span>
 <span class="doccomment">//!     }</span>
 <span class="doccomment">//! }</span>
 <span class="doccomment">//! ```</span>
