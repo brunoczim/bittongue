@@ -280,6 +280,10 @@
 <span id="280">280</span>
 <span id="281">281</span>
 <span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module provides utilities to handle source code of a programming</span>
 <span class="doccomment">//! language.</span>
 <span class="doccomment">//!</span>
@@ -344,7 +348,7 @@
 
 <span class="doccomment">/// Inner structure of a source.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">SrcInner</span> {
+<span class="kw">struct</span> <span class="ident">SourceInner</span> {
     <span class="doccomment">/// File name.</span>
     <span class="ident">name</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Contents of the source.</span>
@@ -355,15 +359,19 @@
     <span class="ident">newlines</span>: <span class="ident">IndexArray</span>,
 }
 
-<span class="doccomment">/// A source code object, such as read from a file.</span>
+<span class="doccomment">/// A source code object, such as read from a file. Cloning this object results</span>
+<span class="doccomment">/// in simply incrementing a reference counter, thus sharing the source code</span>
+<span class="doccomment">/// object.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Source</span> {
     <span class="doccomment">/// The inner structure containing the actual data.</span>
-    <span class="ident">inner</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">SrcInner</span><span class="op">&gt;</span>,
+    <span class="ident">inner</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">SourceInner</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Source</span> {
-    <span class="doccomment">/// Creates a new source code object given its name and its contentss.</span>
+    <span class="doccomment">/// Creates a new source code object given its name and its contents.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Contents are rearranged as grapheme clusters.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S0</span>, <span class="ident">S1</span><span class="op">&gt;</span>(<span class="ident">name</span>: <span class="ident">S0</span>, <span class="ident">contents</span>: <span class="ident">S1</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">S0</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>,
@@ -384,7 +392,7 @@
 
         <span class="kw">let</span> <span class="ident">segments</span> <span class="op">=</span> <span class="ident">segments</span>.<span class="ident">into</span>();
         <span class="kw">let</span> <span class="ident">newlines</span> <span class="op">=</span> <span class="ident">newlines</span>.<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">SrcInner</span> { <span class="ident">name</span>, <span class="ident">contents</span>, <span class="ident">segments</span>, <span class="ident">newlines</span> };
+        <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">SourceInner</span> { <span class="ident">name</span>, <span class="ident">contents</span>, <span class="ident">segments</span>, <span class="ident">newlines</span> };
         <span class="self">Self</span> { <span class="ident">inner</span>: <span class="ident">Rc::new</span>(<span class="ident">inner</span>) }
     }
 
@@ -486,7 +494,7 @@
 
 <span class="kw">impl</span> <span class="ident">Ord</span> <span class="kw">for</span> <span class="ident">Source</span> {
     <span class="kw">fn</span> <span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">Ordering</span> {
-        (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">SrcInner</span>).<span class="ident">cmp</span>(<span class="kw-2">&amp;</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">other</span>.<span class="ident">inner</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>))
+        (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">SourceInner</span>).<span class="ident">cmp</span>(<span class="kw-2">&amp;</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">other</span>.<span class="ident">inner</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>))
     }
 }
 
@@ -495,7 +503,7 @@
     <span class="kw">where</span>
         <span class="ident">H</span>: <span class="ident">Hasher</span>,
     {
-        (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">SrcInner</span>).<span class="ident">hash</span>(<span class="ident">hasher</span>)
+        (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">inner</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">SourceInner</span>).<span class="ident">hash</span>(<span class="ident">hasher</span>)
     }
 }
 

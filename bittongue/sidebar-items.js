@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["diagnostic","This module exports error-related utilities for parse/compile-time of a programming language."],["lexer",""],["source","This module provides utilities to handle source code of a programming language."]]});
+initSidebarItems({"mod":[["diagnostic","This module exports error-related utilities for parse/compile-time of a programming language."],["lexer","This module exports utilities for writing lexers and a token stream type."],["source","This module provides utilities to handle source code of a programming language."]]});
