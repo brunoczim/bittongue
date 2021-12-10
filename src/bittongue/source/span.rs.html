@@ -265,6 +265,25 @@
 <span id="265">265</span>
 <span id="266">266</span>
 <span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
 </pre><pre class="rust"><code><span class="doccomment">//! This module provides ways of tracking ranges (spans) in the source code.</span>
 
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Location</span>, <span class="ident">Source</span>};
@@ -376,6 +395,25 @@
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">try_slice</span>(<span class="ident">range</span>.<span class="ident">clone</span>()) {
             <span class="prelude-val">Some</span>(<span class="ident">span</span>) =&gt; <span class="ident">span</span>,
             <span class="prelude-val">None</span> =&gt; <span class="ident">bad_slice</span>(<span class="ident">range</span>),
+        }
+    }
+
+    <span class="doccomment">/// Joins two spans into a larger span, such that both are included, but not</span>
+    <span class="doccomment">/// bigger than it needs to be. Note however that if there is a hole between</span>
+    <span class="doccomment">/// the two spans, the hole is included.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Panic</span>
+    <span class="doccomment">/// Panics if the spans have different [`Source`]s.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Span</span>) -&gt; <span class="ident">Span</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">source</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">other</span>.<span class="ident">source</span>() {
+            <span class="macro">panic!</span>(<span class="string">&quot;Cannot join spans of different sources&quot;</span>);
+        }
+        <span class="kw">let</span> <span class="ident">self_end</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start</span>.<span class="ident">position</span>() <span class="op">+</span> <span class="self">self</span>.<span class="ident">length</span>;
+        <span class="kw">let</span> <span class="ident">other_end</span> <span class="op">=</span> <span class="ident">other</span>.<span class="ident">start</span>.<span class="ident">position</span>() <span class="op">+</span> <span class="ident">other</span>.<span class="ident">length</span>;
+        <span class="kw">if</span> <span class="ident">self_end</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">other_end</span> {
+            <span class="ident">Span::new</span>(<span class="self">self</span>.<span class="ident">start</span>.<span class="ident">clone</span>(), <span class="ident">other_end</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">start</span>.<span class="ident">position</span>())
+        } <span class="kw">else</span> {
+            <span class="ident">Span::new</span>(<span class="ident">other</span>.<span class="ident">start</span>.<span class="ident">clone</span>(), <span class="ident">self_end</span> <span class="op">-</span> <span class="ident">other</span>.<span class="ident">start</span>.<span class="ident">position</span>())
         }
     }
 
