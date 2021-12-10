@@ -18,7 +18,7 @@
 //! };
 //!
 //! fn main() {
-//!     let source = Source::new("example.lisp", "; addition\n(add ç (x y))");
+//!     let source = Source::new("example.lang", "; addition\n(add ç (x y))");
 //!     let mut diagnostics = Diagnostics::new();
 //!     let mut tokens = TokenStream::new(&source, Lexer, &mut diagnostics);
 //!     assert!(diagnostics.is_ok());
@@ -161,6 +161,33 @@
 //! #[derive(Debug, Clone)]
 //! pub struct Lexer;
 //!
+//! impl LexerTrait for Lexer {
+//!     type TokenKind = TokenKind;
+//!
+//!     fn generate_token(
+//!         &mut self,
+//!         reader: &mut Reader,
+//!         diagnostics: &mut Diagnostics,
+//!     ) -> Result<Token<Self::TokenKind>, LexingError> {
+//!         self.skip_discardable(reader);
+//!
+//!         reader.mark();
+//!
+//!         if self.is_curr_ident(reader) {
+//!             Ok(self.tokenize_ident(reader))
+//!         } else if self.is_curr_open_paren(reader) {
+//!             Ok(self.tokenize_open_paren(reader))
+//!         } else if self.is_curr_close_paren(reader) {
+//!             Ok(self.tokenize_close_paren(reader))
+//!         } else if reader.is_eof() {
+//!             Ok(self.tokenize_eof(reader))
+//!         } else {
+//!             self.invalid_grapheme(reader, diagnostics);
+//!             Err(LexingError)
+//!         }
+//!     }
+//! }
+//!
 //! impl Lexer {
 //!     fn is_curr_ident(&self, reader: &Reader) -> bool {
 //!         reader.current().map_or(false, |grapheme| {
@@ -168,6 +195,7 @@
 //!                 grapheme >= "A" && grapheme <= "Z"
 //!                 || grapheme >= "a" && grapheme <= "z"
 //!                 || grapheme >= "0" && grapheme <= "9"
+//!                 || grapheme == "_"
 //!             )
 //!         })
 //!     }
@@ -217,49 +245,35 @@
 //!             false
 //!         }
 //!     }
-//! }
 //!
-//! impl LexerTrait for Lexer {
-//!     type TokenKind = TokenKind;
-//!
-//!     fn generate_token(
-//!         &mut self,
-//!         reader: &mut Reader,
-//!          diagnostics: &mut Diagnostics,
-//!     ) -> Result<Token<Self::TokenKind>, LexingError> {
-//!         self.skip_discardable(reader);
-//!
-//!         reader.mark();
-//!         if self.is_curr_ident(reader) {
-//!             while self.is_curr_ident(reader) {
-//!                 reader.next();
-//!             }
-//!             Ok(Token {
-//!                 kind: TokenKind::Identifier,
-//!                 span: reader.span(),
-//!             })
-//!         } else if self.is_curr_open_paren(reader) {
+//!     fn tokenize_ident(&self, reader: &mut Reader) -> Token<TokenKind> {
+//!         while self.is_curr_ident(reader) {
 //!             reader.next();
-//!             Ok(Token {
-//!                 kind: TokenKind::OpenParen,
-//!                 span: reader.span(),
-//!             })
-//!         } else if self.is_curr_close_paren(reader) {
-//!             reader.next();
-//!             Ok(Token {
-//!                 kind: TokenKind::CloseParen,
-//!                 span: reader.span(),
-//!             })
-//!         } else if reader.is_eof() {
-//!             Ok(Token {
-//!                 kind: TokenKind::Eof,
-//!                 span: reader.span(),
-//!             })
-//!         } else {
-//!             reader.next();
-//!             diagnostics.raise(InvalidGrapheme { span: reader.span() });
-//!             Err(LexingError)
 //!         }
+//!         Token { kind: TokenKind::Identifier, span: reader.span() }
+//!     }
+//!
+//!     fn tokenize_open_paren(&self, reader: &mut Reader) -> Token<TokenKind> {
+//!         reader.next();
+//!         Token { kind: TokenKind::OpenParen, span: reader.span() }
+//!     }
+//!
+//!     fn tokenize_close_paren(&self, reader: &mut Reader) -> Token<TokenKind> {
+//!         reader.next();
+//!         Token { kind: TokenKind::CloseParen, span: reader.span() }
+//!     }
+//!
+//!     fn tokenize_eof(&self, reader: &mut Reader) -> Token<TokenKind> {
+//!         Token { kind: TokenKind::Eof, span: reader.span() }
+//!     }
+//!
+//!     fn invalid_grapheme(
+//!         &self,
+//!         reader: &mut Reader,
+//!         diagnostics: &mut Diagnostics,
+//!     ) {
+//!         reader.next();
+//!         diagnostics.raise(InvalidGrapheme { span: reader.span() });
 //!     }
 //! }
 //! ```
