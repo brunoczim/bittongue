@@ -358,7 +358,13 @@
 <span id="358">358</span>
 <span id="359">359</span>
 <span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Utilities for indexing objects in memory, such as the source code object.</span>
+
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::grapheme::GraphemeCluster</span>;
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::Source</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{
@@ -618,13 +624,15 @@
 }
 
 <span class="kw">impl</span> <span class="ident">SourceIndex</span> <span class="kw">for</span> <span class="ident">usize</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">str</span>;
+    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">GraphemeCluster</span>;
 
     <span class="kw">fn</span> <span class="ident">get</span><span class="op">&lt;</span><span class="lifetime">&#39;source</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">Source</span>,
     ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
-        (<span class="kw-2">*</span><span class="self">self</span> .. <span class="self">self</span>.<span class="ident">checked_add</span>(<span class="number">1</span>)<span class="question-mark">?</span>).<span class="ident">get</span>(<span class="ident">source</span>)
+        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">source</span>.<span class="ident">inner</span>.<span class="ident">segments</span>.<span class="ident">get</span>(<span class="kw-2">*</span><span class="self">self</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">source</span>.<span class="ident">inner</span>.<span class="ident">segments</span>.<span class="ident">get</span>(<span class="self">self</span> <span class="op">+</span> <span class="number">1</span>)<span class="question-mark">?</span>;
+        <span class="ident">source</span>.<span class="ident">contents</span>().<span class="ident">get</span>(<span class="ident">start</span> .. <span class="ident">end</span>).<span class="ident">map</span>(<span class="ident">GraphemeCluster::new_unchecked</span>)
     }
 }
 
