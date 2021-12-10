@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["GraphemeCluster",""]]});
+initSidebarItems({"fn":[["indexed_iter",""],["iter",""]],"struct":[["GraphemeCluster",""],["IndexedIter",""],["Iter",""]]});
