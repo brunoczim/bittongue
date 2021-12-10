@@ -112,6 +112,25 @@ impl Span {
         }
     }
 
+    /// Joins two spans into a larger span, such that both are included, but not
+    /// bigger than it needs to be. Note however that if there is a hole between
+    /// the two spans, the hole is included.
+    ///
+    /// # Panic
+    /// Panics if the spans have different [`Source`]s.
+    pub fn join(&self, other: &Span) -> Span {
+        if self.source() != other.source() {
+            panic!("Cannot join spans of different sources");
+        }
+        let self_end = self.start.position() + self.length;
+        let other_end = other.start.position() + other.length;
+        if self_end <= other_end {
+            Span::new(self.start.clone(), other_end - self.start.position())
+        } else {
+            Span::new(other.start.clone(), self_end - other.start.position())
+        }
+    }
+
     /// Expands this span in order to contain the whole lines the original span
     /// contains.
     pub fn expand_lines(&self) -> Span {
