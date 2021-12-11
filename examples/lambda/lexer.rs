@@ -1,9 +1,12 @@
-use crate::{error::InvalidGrapheme, token::TokenKind};
+pub mod error;
+
+use crate::token::TokenKind;
 use bittongue::{
     diagnostic::Diagnostics,
     lexer::{Lexer as LexerTrait, LexingError, Token},
     source::Reader,
 };
+use error::InvalidGrapheme;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Lexer;

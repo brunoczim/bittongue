@@ -1,6 +1,7 @@
+pub mod error;
+
 use crate::{
     ast::{Expr, ExprKind},
-    error::{MismatchedToken, UnmatchedCloseParen, UnmatchedOpenParen},
     lexer::Lexer,
     token::TokenKind,
 };
@@ -8,6 +9,7 @@ use bittongue::{
     diagnostic::Diagnostics,
     lexer::{Token, TokenStream},
 };
+use error::{MismatchedToken, UnmatchedCloseParen, UnmatchedOpenParen};
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ParseError;
