@@ -76,7 +76,7 @@ struct SourceInner {
 /// A source code object, such as read from a file. Cloning this object results
 /// in simply incrementing a reference counter, thus sharing the source code
 /// object.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Source {
     /// The inner structure containing the actual data.
     inner: Arc<SourceInner>,
@@ -178,6 +178,16 @@ impl Source {
     /// Creates a source code reader (a stream) from this source code object.
     pub fn reader(&self) -> Reader {
         Reader::new(self.clone())
+    }
+}
+
+impl fmt::Debug for Source {
+    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
+        fmtr.debug_struct("Source")
+            .field("name", &self.name())
+            .field("contents", &self.contents())
+            .field("id", &(&*self.inner as *const SourceInner as usize))
+            .finish()
     }
 }
 

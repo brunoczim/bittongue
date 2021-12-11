@@ -4,6 +4,7 @@ use crate::{
     diagnostic::Diagnostics,
     source::{Reader, Source, Span},
 };
+use std::fmt;
 
 /// A kind of token, e.g. "if", "number", "identifier", "end of file", etc.
 pub trait TokenKind {
@@ -29,6 +30,19 @@ where
     pub kind: K,
     /// [`Span`] in the source code of this token.
     pub span: Span,
+}
+
+impl<K> fmt::Display for Token<K>
+where
+    K: TokenKind,
+{
+    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
+        if self.kind.is_eof() {
+            write!(fmtr, "end-of-input")
+        } else {
+            write!(fmtr, "`{}`", self.span.as_str())
+        }
+    }
 }
 
 /// A generic lexer.
