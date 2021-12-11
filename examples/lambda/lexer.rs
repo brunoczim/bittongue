@@ -1,3 +1,5 @@
+/// Exports items related to the lambda calculus lexer.
+
 pub mod error;
 
 use crate::token::TokenKind;
@@ -8,6 +10,7 @@ use bittongue::{
 };
 use error::InvalidGrapheme;
 
+/// Lexer implementation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Lexer;
 
@@ -43,39 +46,46 @@ impl LexerTrait for Lexer {
 }
 
 impl Lexer {
+    /// Is the reader's current grapheme an identifier letter?
+    ///
+    /// Digits allowed even at the beginning of the identifier.
     fn is_curr_ident(&self, reader: &mut Reader) -> bool {
         reader.test(|grapheme| {
             grapheme.is_ascii_alphanumeric() || grapheme == "_"
         })
     }
 
+    /// Is the reader's current grapheme a lambda sign?
     fn is_curr_lambda(&self, reader: &mut Reader) -> bool {
         reader.test(|grapheme| grapheme == "\\")
     }
 
+    /// Is the reader's current grapheme a dot?
     fn is_curr_dot(&self, reader: &mut Reader) -> bool {
         reader.test(|grapheme| grapheme == ".")
     }
 
+    /// Is the reader's current grapheme an opening parenthesis?
     fn is_curr_open_paren(&self, reader: &mut Reader) -> bool {
         reader.test(|grapheme| grapheme == "(")
     }
 
+    /// Is the reader's current grapheme a closing parenthesis?
     fn is_curr_close_paren(&self, reader: &mut Reader) -> bool {
         reader.test(|grapheme| grapheme == ")")
     }
 
-    /// Tests for whitespaces.
+    /// Is the reader's current grapheme whitespace?
     fn is_curr_whitespace(&self, reader: &Reader) -> bool {
         reader.test(|grapheme| grapheme.is_whitespace_char())
     }
 
-    /// Tests for comment starts (`;`).
+    /// Is the reader's current grapheme a comment start (`;`)?
     fn is_curr_comment_start(&self, reader: &Reader) -> bool {
         reader.test(|grapheme| grapheme == ";")
     }
 
-    /// Tests for comment ends (`\n` or end-of-input).
+    /// Is the reader's current grapheme a comment ending (`\n` or EOF)?
     fn is_curr_comment_end(&self, reader: &Reader) -> bool {
         reader.test_or_eof(|grapheme| grapheme == "\n")
     }
@@ -107,6 +117,7 @@ impl Lexer {
         }
     }
 
+    /// Tokenizes an identifier.
     fn tokenize_ident(&self, reader: &mut Reader) -> Token<TokenKind> {
         while self.is_curr_ident(reader) {
             reader.next();
@@ -114,26 +125,31 @@ impl Lexer {
         Token { kind: TokenKind::Ident, span: reader.span() }
     }
 
+    /// Tokenizes a lambda sign.
     fn tokenize_lambda(&self, reader: &mut Reader) -> Token<TokenKind> {
         reader.next();
         Token { kind: TokenKind::Lambda, span: reader.span() }
     }
 
+    /// Tokenizes a dot.
     fn tokenize_dot(&self, reader: &mut Reader) -> Token<TokenKind> {
         reader.next();
         Token { kind: TokenKind::Dot, span: reader.span() }
     }
 
+    /// Tokenizes an opening parenthesis.
     fn tokenize_open_paren(&self, reader: &mut Reader) -> Token<TokenKind> {
         reader.next();
         Token { kind: TokenKind::OpenParen, span: reader.span() }
     }
 
+    /// Tokenizes a closing parenthesis.
     fn tokenize_close_paren(&self, reader: &mut Reader) -> Token<TokenKind> {
         reader.next();
         Token { kind: TokenKind::CloseParen, span: reader.span() }
     }
 
+    /// Tokenizes an end-of-input mark.
     fn tokenize_eof(&self, reader: &mut Reader) -> Token<TokenKind> {
         Token { kind: TokenKind::Eof, span: reader.span() }
     }

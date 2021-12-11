@@ -1,3 +1,7 @@
+//! This program implements a parser of lambda calculus. [`main`] function will
+//! read source from a file, parse it, show errors possibly found, and print the
+//! resulting expression with span/location of each node.
+
 pub mod token;
 pub mod lexer;
 pub mod ast;

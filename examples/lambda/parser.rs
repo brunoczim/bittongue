@@ -1,3 +1,6 @@
+//! Parser functions. More specifically, only [`parse_expr`] should be used
+//! outside this module as a general-purpose lambda calculus parser.
+
 pub mod error;
 
 use crate::{
@@ -12,9 +15,12 @@ use bittongue::{
 use error::{MismatchedToken, UnmatchedCloseParen, UnmatchedOpenParen};
 use TokenKind::*;
 
+/// Dummy error for when parser cannot produce something. Might not be created
+/// even if parse errors were found.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct ParseError;
 
+/// Parses a whole expression.
 pub fn parse_expr(
     token_stream: &mut TokenStream<Lexer>,
     diagnostics: &mut Diagnostics,
@@ -22,6 +28,8 @@ pub fn parse_expr(
     parse_with_end(Eof, token_stream, diagnostics)
 }
 
+/// Expects a set of tokens. If the current token is not in the set, an error is
+/// raised.
 fn expect_token(
     expected: &[TokenKind],
     token_stream: &mut TokenStream<Lexer>,
@@ -48,6 +56,7 @@ fn expect_token(
     }
 }
 
+/// Parses a syntactical lambda.
 fn parse_lambda(
     end: TokenKind,
     token_stream: &mut TokenStream<Lexer>,
@@ -76,6 +85,7 @@ fn parse_lambda(
     })
 }
 
+/// Parses an expression surrounded by parenthesis.
 fn parse_parenthesized(
     open_paren_token: Token<TokenKind>,
     token_stream: &mut TokenStream<Lexer>,
@@ -100,18 +110,25 @@ fn parse_parenthesized(
     Ok(output_expr)
 }
 
+/// Parses an expression given the token kind that finishes it.
 fn parse_with_end(
     end: TokenKind,
     token_stream: &mut TokenStream<Lexer>,
     diagnostics: &mut Diagnostics,
 ) -> Result<Expr, ParseError> {
+    // Working expression. Initially absent. If still absent by the end of the
+    // function, an error is raised.
     let mut curr_expr = None;
+    // Whether this expression had a non-eof token.
     let mut had_child_token = false;
 
     loop {
         match token_stream.current() {
             Ok(token) => match token.kind {
+                // Equals to the end? Done.
                 kind if end == kind => break,
+
+                // Lambda? Delegate to parse_lambda and stack the expressions.
                 Lambda => {
                     if let Ok(lambda) =
                         parse_lambda(end, token_stream, diagnostics)
@@ -119,6 +136,8 @@ fn parse_with_end(
                         curr_expr = Some(stack_exprs(curr_expr, lambda));
                     }
                 },
+
+                // Identifier? Simply create a variable.
                 Ident => {
                     let next_expr = Expr {
                         span: token.span.clone(),
@@ -128,6 +147,8 @@ fn parse_with_end(
                     token_stream.next(diagnostics);
                 },
 
+                // Opening parenthesis? Simply delegate to parse_parenthesized
+                // and stack the expressions.
                 OpenParen => {
                     if let Ok(next_expr) = parse_parenthesized(
                         token.clone(),
@@ -138,8 +159,15 @@ fn parse_with_end(
                     }
                 },
 
+                // End-Of-Input?? Stop without errors, they will be produced
+                // somewhereelse (given that EOF was not the expected finishing
+                // token).
                 Eof => break,
 
+                // Closing parenthesis (and not expected to finish the
+                // expression)? Issue an unmatched closing
+                // parenthesis. If it is not the final token of this expression,
+                // there is no valid opening parenthesis to match it.
                 CloseParen => {
                     let error =
                         UnmatchedCloseParen { span: token.span.clone() };
@@ -147,6 +175,7 @@ fn parse_with_end(
                     token_stream.next(diagnostics);
                 },
 
+                // Otherwise, e.g. dot, the token was not expected.
                 _ => {
                     let error = MismatchedToken {
                         expected: vec![Lambda, Ident, OpenParen, end],
@@ -157,6 +186,7 @@ fn parse_with_end(
                 },
             },
 
+            // The lexer already issued an error here.
             Err(_) => {
                 token_stream.next(diagnostics);
             },
@@ -165,8 +195,12 @@ fn parse_with_end(
     }
 
     match curr_expr {
+        // We have an expression? Good, return it even if there are errors.
         Some(expr) => Ok(expr),
+        // No expression? Probably an error.
         None => {
+            // Only issue the error if EOF was directly found, without any other
+            // token kind in the way.
             if !had_child_token {
                 let error = MismatchedToken {
                     expected: vec![Lambda, Ident, OpenParen],
@@ -179,6 +213,8 @@ fn parse_with_end(
     }
 }
 
+/// Stacks two expression, with the first possibly missing. If the two
+/// expressions are present, then an application node is created.
 fn stack_exprs(left: Option<Expr>, right: Expr) -> Expr {
     match left {
         Some(function) => Expr {

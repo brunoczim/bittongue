@@ -1,3 +1,5 @@
+//! Errors raised by the lexer.
+
 use bittongue::{
     diagnostic::{Diagnostic, Level},
     source::Span,

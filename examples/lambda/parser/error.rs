@@ -1,3 +1,5 @@
+//! Errors raised by the parser.
+
 use crate::token::TokenKind;
 use bittongue::{
     diagnostic::{Diagnostic, Level},
@@ -6,10 +8,13 @@ use bittongue::{
 };
 use std::fmt;
 
-/// Error raised when the lexer finds an invalid grapheme cluster.
+/// Error raised when the parser expected a set of tokens, but an unexpected
+/// token was found.
 #[derive(Debug, Clone)]
 pub struct MismatchedToken {
+    /// Expected set of tokens.
     pub expected: Vec<TokenKind>,
+    /// Unexpected token that was found.
     pub found: Token<TokenKind>,
 }
 
@@ -50,8 +55,11 @@ impl Diagnostic for MismatchedToken {
     }
 }
 
+/// Error raised when the parser expected a closing parenthesis matching an
+/// existing open parenthesis, but no such closing parenthesis was found.
 #[derive(Debug, Clone)]
 pub struct UnmatchedOpenParen {
+    /// Span of the opening parenthesis.
     pub span: Span,
 }
 
@@ -71,8 +79,11 @@ impl Diagnostic for UnmatchedOpenParen {
     }
 }
 
+/// Error raised when the parser expected an opening parenthesis matching an
+/// existing closing parenthesis, but no such opening parenthesis was found.
 #[derive(Debug, Clone)]
 pub struct UnmatchedCloseParen {
+    /// Span of the closing parenthesis.
     pub span: Span,
 }
 
